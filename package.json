@@ -1,0 +1,22 @@
+{
+  "name": "quiness",
+  "description": "quick user interface tool kit for ES.",
+  "version": "0.9.0",
+  "licenses": [
+    {
+      "type": "zlib",
+      "url": "https://opensource.org/licenses/Zlib"
+    }
+  ],
+  "private": true,
+  "author": "Taku Aoi<aoitaku@gmail.com>",
+  "main": "./lib/index.js",
+  "types": "./lib/index",
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/aoitaku/guiness.git"
+  },
+  "dependencies": {
+    "lodash": "^4.17.4"
+  }
+}
