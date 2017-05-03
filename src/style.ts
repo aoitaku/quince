@@ -15,6 +15,8 @@ export default class Style {
   public alignItems: 'top' | 'center' | 'spaceBetween' | 'bottom' | null = null
   public breakAfter: boolean = false
   public visible: boolean = true
+  public horizontalItemArrangement: 'real' | 'ratio' = 'real'
+  public verticalItemArrangement: 'real' | 'ratio' = 'real'
 
   private _margin: [number, number, number, number] = [0, 0, 0, 0]
   private _padding: [number, number, number, number] = [0, 0, 0, 0]

@@ -12,6 +12,8 @@ export default class Style {
     alignItems: 'top' | 'center' | 'spaceBetween' | 'bottom' | null;
     breakAfter: boolean;
     visible: boolean;
+    horizontalItemArrangement: 'real' | 'ratio';
+    verticalItemArrangement: 'real' | 'ratio';
     private _margin;
     private _padding;
     readonly margin: [number, number, number, number];

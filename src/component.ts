@@ -30,6 +30,8 @@ export interface IComponent {
     readonly alignItems: 'center' | 'spaceBetween' | 'top' | 'bottom'
     readonly breakAfter: boolean
     readonly visible: boolean
+    readonly horizontalItemArrangement: 'real' | 'ratio'
+    readonly verticalItemArrangement: 'real' | 'ratio'
     readonly paddingTop: number
     readonly paddingRight: number
     readonly paddingBottom: number
@@ -122,6 +124,14 @@ export default class Component implements IComponent {
 
   get visible () {
     return this.style.visible
+  }
+
+  get horizontalItemArrangement () {
+    return this.style.horizontalItemArrangement
+  }
+
+  get verticalItemArrangement () {
+    return this.style.verticalItemArrangement
   }
 
   get paddingTop () {
@@ -240,7 +250,7 @@ export default class Component implements IComponent {
     return parent.height - this.verticalMargin
   }
 
-  public relayout (ox: number = 0, oy: number = 0, parent: ISizeMeasurable) {
+  public relayout (ox: number = 0, oy: number = 0, parent: IComponent | ISizeMeasurable) {
     this.resize(parent)
     this.move(ox, oy, parent)
   }
@@ -250,21 +260,21 @@ export default class Component implements IComponent {
     this.moveY(toY, parent)
   }
 
-  public resize (parent: ISizeMeasurable) {
+  public resize (parent: IComponent | ISizeMeasurable) {
     if (this.style.width === 'full') {
       this.rawWidth = this.innerWidth(parent)
-    } else if (Number.isInteger(this.style.width)) {
+    } else if (!this.testIfComponent(parent) || parent.verticalItemArrangement === 'real') {
       this.rawWidth = this.style.width
-    } else if (typeof this.style.width === 'number')  {
+    } else if (parent.verticalItemArrangement === 'ratio')  {
       this.rawWidth = this.style.width * parent.width
     } else {
       this.rawWidth = null
     }
     if (this.style.height === 'full') {
       this.rawHeight = this.innerHeight(parent)
-    } else if (Number.isInteger(this.style.height)) {
+    } else if (!this.testIfComponent(parent) || parent.verticalItemArrangement === 'real') {
       this.rawHeight = this.style.height
-    } else if (typeof this.style.height === 'number')  {
+    } else if (parent.verticalItemArrangement === 'ratio')  {
       this.rawHeight = this.style.height * parent.height
     } else {
       this.rawHeight = null
