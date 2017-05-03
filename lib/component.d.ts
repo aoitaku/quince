@@ -53,7 +53,7 @@ export interface IComponent {
     move(toX: number, toY: number, parent: ISizeMeasurable): void;
     resize(parent: ISizeMeasurable): void;
 }
-export declare type Constructor<T> = new (...args: any[]) => T;
+export declare type ComponentConstructor = new (...args: any[]) => IComponent;
 export default class Component implements IComponent {
     readonly id: string;
     rawX: number;

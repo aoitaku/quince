@@ -1,7 +1,7 @@
 /// <reference path='../typings/index.d.ts' />
 import _ from 'lodash'
-import Component, { IComponent, ISizeMeasurable } from './component'
-import { ContainerConstructor, IContainer } from './container'
+import Component, { ComponentConstructor, IComponent, ISizeMeasurable } from './component'
+import Container, { ContainerConstructor, IContainer } from './container'
 import './lodash-chunk_by'
 
 export interface ILayouter {
@@ -9,12 +9,10 @@ export interface ILayouter {
   moveComponents (ox: number, oy: number, parent: ISizeMeasurable): void
 }
 
-export type IContainerComponent = IComponent & IContainer
+export type LayouterConstructor = new (...args: any[]) => ILayouter
 
-export type LayouterConstructor<T> = new (...args: any[]) => T & ILayouter
-
-export default function Layouter<T extends ContainerConstructor<IContainerComponent>> (base: T): LayouterConstructor<IContainerComponent> {
-  return class extends base {
+export default function Layouter<T extends ComponentConstructor & ContainerConstructor> (base: T): T & LayouterConstructor {
+  return class extends base implements ILayouter {
     public resizeComponents (parent: ISizeMeasurable) {
       switch (this.layout) {
       case 'flow':

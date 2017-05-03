@@ -58,7 +58,7 @@ export interface IComponent {
     resize (parent: ISizeMeasurable): void
 }
 
-export type Constructor<T> = new (...args: any[]) => T
+export type ComponentConstructor = new (...args: any[]) => IComponent
 
 export default class Component implements IComponent {
 

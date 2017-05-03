@@ -6,6 +6,5 @@ export interface ILayouter {
     resizeComponents(parent: ISizeMeasurable): void;
     moveComponents(ox: number, oy: number, parent: ISizeMeasurable): void;
 }
-export declare type IContainerComponent = IComponent & IContainer;
-export declare type LayouterConstructor<T> = new (...args: any[]) => T & ILayouter;
-export default function Layouter<T extends ContainerConstructor<IContainerComponent>>(base: T): LayouterConstructor<IContainerComponent>;
+export declare type LayouterConstructor = new (...args: any[]) => IComponent & IContainer & ILayouter;
+export default function Layouter<T extends ContainerConstructor>(base: T): LayouterConstructor;

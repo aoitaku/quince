@@ -1,6 +1,6 @@
 /// <reference path='../typings/index.d.ts' />
 import _ from 'lodash'
-import Component, { Constructor, IComponent } from './component'
+import Component, { ComponentConstructor, IComponent } from './component'
 
 export interface IContainer extends Iterable<IComponent> {
   components: IComponent[]
@@ -8,9 +8,9 @@ export interface IContainer extends Iterable<IComponent> {
   find (id: string): IComponent
 }
 
-export type ContainerConstructor<T> = new (...args: any[]) => T & IContainer
+export type ContainerConstructor = new (...args: any[]) => IContainer
 
-export default function Container<T extends Constructor<IComponent>> (base: T): ContainerConstructor<IComponent> {
+export default function Container<T extends ComponentConstructor> (base: T): T & ContainerConstructor {
   return class extends base implements IContainer {
     public components: IComponent[]
 
