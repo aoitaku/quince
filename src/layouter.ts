@@ -5,15 +5,16 @@ import Container, { ContainerConstructor, IContainer } from './container'
 import './lodash-chunk_by'
 
 export interface ILayouter {
-  resizeComponents (parent: ISizeMeasurable): void
-  moveComponents (ox: number, oy: number, parent: ISizeMeasurable): void
+  resize (parent: ISizeMeasurable): void
+  move (ox: number, oy: number, parent: ISizeMeasurable): void
 }
 
 export type LayouterConstructor = new (...args: any[]) => ILayouter
 
 export default function Layouter<T extends ComponentConstructor & ContainerConstructor> (base: T): T & LayouterConstructor {
   return class extends base implements ILayouter {
-    public resizeComponents (parent: ISizeMeasurable) {
+    public resize (parent: ISizeMeasurable) {
+      super.resize(parent)
       switch (this.layout) {
       case 'flow':
         this.resizeComponentsForFlowLayout(parent)
@@ -29,7 +30,8 @@ export default function Layouter<T extends ComponentConstructor & ContainerConst
       }
     }
 
-    public moveComponents (ox: number = 0, oy: number = 0, parent: ISizeMeasurable) {
+    public move (ox: number = 0, oy: number = 0, parent: ISizeMeasurable) {
+      super.move(ox, oy, parent)
       switch (this.layout) {
       case 'flow':
         this.moveComponentsForFlowLayout(ox, oy, parent)
