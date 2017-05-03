@@ -1,9 +1,9 @@
 /// <reference path="../typings/index.d.ts" />
-import Component, { ComponentConstructor } from './component';
-export interface IContainer extends Iterable<Component> {
-    components: Component[];
-    addComponent(component: Component): void;
-    find(id: string): Component;
+import { Constructor, IComponent } from './component';
+export interface IContainer extends Iterable<IComponent> {
+    components: IComponent[];
+    addComponent(component: IComponent): void;
+    find(id: string): IComponent;
 }
-export declare type ContainerComponentConstructor = new (...args: any[]) => Component & IContainer;
-export default function Container<T extends ComponentConstructor>(base: T): ContainerComponentConstructor;
+export declare type ContainerConstructor<T> = new (...args: any[]) => T & IContainer;
+export default function Container<T extends Constructor<IComponent>>(base: T): ContainerConstructor<IComponent>;

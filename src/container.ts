@@ -1,20 +1,20 @@
 /// <reference path='../typings/index.d.ts' />
 import _ from 'lodash'
-import Component, { ComponentConstructor } from './component'
+import Component, { Constructor, IComponent } from './component'
 
-export interface IContainer extends Iterable<Component> {
-  components: Component[]
-  addComponent (component: Component): void
-  find (id: string): Component
+export interface IContainer extends Iterable<IComponent> {
+  components: IComponent[]
+  addComponent (component: IComponent): void
+  find (id: string): IComponent
 }
 
-export type ContainerComponentConstructor = new (...args: any[]) => Component & IContainer
+export type ContainerConstructor<T> = new (...args: any[]) => T & IContainer
 
-export default function Container<T extends ComponentConstructor> (base: T): ContainerComponentConstructor {
+export default function Container<T extends Constructor<IComponent>> (base: T): ContainerConstructor<IComponent> {
   return class extends base implements IContainer {
-    public components: Component[]
+    public components: IComponent[]
 
-    public addComponent (component: Component) {
+    public addComponent (component: IComponent) {
       this.components.push(component)
     }
 

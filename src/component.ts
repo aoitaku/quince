@@ -10,18 +10,66 @@ export interface IHeightMeasurable {
 
 export type ISizeMeasurable = IWidthMeasurable & IHeightMeasurable
 
-export type ComponentConstructor = new (...args: any[]) => Component
+export interface IComponent {
+  readonly id: string
+    rawX: number
+    rawY: number
+    rawWidth: number
+    rawHeight: number
+    contentWidth: number
+    contentHeight: number
+    readonly x: number
+    readonly y: number
+    readonly position: 'relative' | 'absolute'
+    readonly top: number
+    readonly left: number
+    readonly bottom: number
+    readonly right: number
+    readonly layout: 'flow' | 'horizontalBox' | 'verticalBox'
+    readonly justifyContent: 'center' | 'left' | 'spaceBetween' | 'right'
+    readonly alignItems: 'center' | 'spaceBetween' | 'top' | 'bottom'
+    readonly breakAfter: boolean
+    readonly visible: boolean
+    readonly paddingTop: number
+    readonly paddingRight: number
+    readonly paddingBottom: number
+    readonly paddingLeft: number
+    readonly width: number
+    readonly height: number
+    readonly layoutWidth: number
+    readonly layoutHeight: number
+    readonly marginTop: number
+    readonly marginRight: number
+    readonly marginBottom: number
+    readonly marginLeft: number
+    readonly horizontalMargin: number
+    readonly verticalMargin: number
+    offsetLeft (parent: Component): number
+    offsetRight (parent: Component): number
+    horizontalOffset (parent: Component): number
+    testIfComponent (obj: any): obj is Component
+    offsetTop (parent: Component): number
+    offsetBottom (parent: Component): number
+    verticalOffset (parent: Component): number
+    innerWidth (parent: Component | IWidthMeasurable): number
+    innerHeight (parent: Component | IHeightMeasurable): number
+    relayout (ox: number, oy: number, parent: ISizeMeasurable): void
+    move (toX: number, toY: number, parent: ISizeMeasurable): void
+    resize (parent: ISizeMeasurable): void
+}
 
-export default class Component {
+export type Constructor<T> = new (...args: any[]) => T
+
+export default class Component implements IComponent {
 
   public readonly id: string
+  public rawX: number
+  public rawY: number
+  public rawWidth: number
+  public rawHeight: number
+  public contentWidth: number
+  public contentHeight: number
   protected readonly style: Style
-  protected rawX: number
-  protected rawY: number
-  protected rawWidth: number
-  protected rawHeight: number
-  protected contentWidth: number
-  protected contentHeight: number
 
   constructor (id: string) {
     this.id = id
@@ -202,7 +250,28 @@ export default class Component {
     this.moveY(toY, parent)
   }
 
-  public moveX (toX: number, parent: ISizeMeasurable) {
+  public resize (parent: ISizeMeasurable) {
+    if (this.style.width === 'full') {
+      this.rawWidth = this.innerWidth(parent)
+    } else if (Number.isInteger(this.style.width)) {
+      this.rawWidth = this.style.width
+    } else if (typeof this.style.width === 'number')  {
+      this.rawWidth = this.style.width * parent.width
+    } else {
+      this.rawWidth = null
+    }
+    if (this.style.height === 'full') {
+      this.rawHeight = this.innerHeight(parent)
+    } else if (Number.isInteger(this.style.height)) {
+      this.rawHeight = this.style.height
+    } else if (typeof this.style.height === 'number')  {
+      this.rawHeight = this.style.height * parent.height
+    } else {
+      this.rawHeight = null
+    }
+  }
+
+  private moveX (toX: number, parent: ISizeMeasurable) {
     if (this.position === 'absolute') {
       if (this.left && typeof this.left === 'number') {
         if (Number.isInteger(this.left)) {
@@ -238,7 +307,7 @@ export default class Component {
     }
   }
 
-  public moveY (toY: number, parent: ISizeMeasurable) {
+  private moveY (toY: number, parent: ISizeMeasurable) {
     if (this.position === 'absolute') {
       if (this.top && typeof this.top === 'number') {
         if (Number.isInteger(this.top)) {
@@ -271,27 +340,6 @@ export default class Component {
       } else {
         this.rawY = toY
       }
-    }
-  }
-
-  public resize (parent: ISizeMeasurable) {
-    if (this.style.width === 'full') {
-      this.rawWidth = this.innerWidth(parent)
-    } else if (Number.isInteger(this.style.width)) {
-      this.rawWidth = this.style.width
-    } else if (typeof this.style.width === 'number')  {
-      this.rawWidth = this.style.width * parent.width
-    } else {
-      this.rawWidth = null
-    }
-    if (this.style.height === 'full') {
-      this.rawHeight = this.innerHeight(parent)
-    } else if (Number.isInteger(this.style.height)) {
-      this.rawHeight = this.style.height
-    } else if (typeof this.style.height === 'number')  {
-      this.rawHeight = this.style.height * parent.height
-    } else {
-      this.rawHeight = null
     }
   }
 }
