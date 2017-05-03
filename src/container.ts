@@ -1,5 +1,5 @@
 /// <reference path='../typings/index.d.ts' />
-import _ from 'lodash'
+import * as _ from 'lodash'
 import Component, { ComponentConstructor, IComponent } from './component'
 
 export interface IContainer extends Iterable<IComponent> {

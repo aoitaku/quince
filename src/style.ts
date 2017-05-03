@@ -1,5 +1,5 @@
 /// <reference path='../typings/index.d.ts' />
-import _ from 'lodash'
+import * as _ from 'lodash'
 
 export default class Style {
 
