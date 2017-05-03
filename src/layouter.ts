@@ -152,6 +152,10 @@ export default function Layouter<T extends ComponentConstructor & ContainerConst
       let verticalMargin = this.paddingTop
       this.contentHeight = _.reduce(this.components, (height: number, component: Component) => {
         const verticalSpace = Math.max(verticalMargin, component.marginTop) + height
+        component.resize(this)
+        if (component.position === 'absolute') {
+          return height
+        }
         verticalMargin = component.marginBottom
         return verticalSpace + component.height
       }, 0) + Math.max(verticalMargin, this.paddingBottom)
