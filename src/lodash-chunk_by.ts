@@ -15,6 +15,6 @@ _.mixin({
         prev[prev.length - 1].push(current)
       }
       return prev
-    }, [])
+    }, [[]])
   },
 }, { chain: false })
