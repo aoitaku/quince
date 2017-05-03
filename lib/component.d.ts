@@ -26,6 +26,8 @@ export interface IComponent {
     readonly alignItems: 'center' | 'spaceBetween' | 'top' | 'bottom';
     readonly breakAfter: boolean;
     readonly visible: boolean;
+    readonly horizontalItemArrangement: 'real' | 'ratio';
+    readonly verticalItemArrangement: 'real' | 'ratio';
     readonly paddingTop: number;
     readonly paddingRight: number;
     readonly paddingBottom: number;
@@ -76,6 +78,8 @@ export default class Component implements IComponent {
     readonly alignItems: "center" | "spaceBetween" | "top" | "bottom";
     readonly breakAfter: boolean;
     readonly visible: boolean;
+    readonly horizontalItemArrangement: "real" | "ratio";
+    readonly verticalItemArrangement: "real" | "ratio";
     readonly paddingTop: number;
     readonly paddingRight: number;
     readonly paddingBottom: number;
@@ -99,9 +103,9 @@ export default class Component implements IComponent {
     verticalOffset(parent: Component): number;
     innerWidth(parent: Component | IWidthMeasurable): number;
     innerHeight(parent: Component | IHeightMeasurable): number;
-    relayout(ox: number, oy: number, parent: ISizeMeasurable): void;
+    relayout(ox: number, oy: number, parent: IComponent | ISizeMeasurable): void;
     move(toX: number, toY: number, parent: ISizeMeasurable): void;
-    resize(parent: ISizeMeasurable): void;
+    resize(parent: IComponent | ISizeMeasurable): void;
     private moveX(toX, parent);
     private moveY(toY, parent);
 }
