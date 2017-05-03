@@ -123,19 +123,23 @@ export default function Layouter<T extends ComponentConstructor & ContainerConst
           case 'spaceBetween':
             if (row.length > 1 && !_.last(row).breakAfter) {
               horizontalSpace += (this.width - innerWidth) / (row.length - 1.0)
-              x += horizontalSpace
             }
+            break
           case 'center':
             x += (this.width - innerWidth) / 2.0
+            break
           case 'right':
             x += (this.width - innerWidth)
+            break
           }
           let y = this.y + verticalSpace
           switch (this.alignItems) {
           case 'center':
             y += (maxComponentHeight - component.height) / 2.0
+            break
           case 'bottom':
             y += (maxComponentHeight - component.height)
+            break
           }
           if (component.position === 'absolute') {
             component.move(this.x, this.y, this)
@@ -238,6 +242,7 @@ export default function Layouter<T extends ComponentConstructor & ContainerConst
           if (this.rawWidth && this.components.length > 1) {
             horizontalSpace += (this.rawWidth - this.contentWidth) / (this.components.length - 1)
           }
+          break
         case 'center':
           x += (this.rawWidth ? (this.rawWidth - this.contentWidth) / 2 : 0)
           break
@@ -248,9 +253,11 @@ export default function Layouter<T extends ComponentConstructor & ContainerConst
         let y = this.y + verticalSpace
         switch (this.alignItems) {
         case 'center':
-          y = (component.innerHeight(this) - component.height) / 2
+          y += (component.innerHeight(this) - component.height) / 2
+          break
         case 'bottom':
-          y = component.innerHeight(this) - component.height
+          y += component.innerHeight(this) - component.height
+          break
         }
         if (component.position === 'absolute') {
           component.move(this.x, this.y, this)
