@@ -1,18 +1,44 @@
 /// <reference path='../typings/index.d.ts' />
 import * as _ from 'lodash'
 
+export interface IAssignableProperties {
+  position?: 'relative' | 'absolute'
+  top?: number
+  left?: number
+  bottom?: number
+  right?: number
+  width?: number | 'full'
+  height?: number | 'full'
+  layout?: 'flow' | 'horizontalBox' | 'verticalBox'
+  justifyContent?: 'left' | 'center' | 'spaceBetween' | 'right'
+  alignItems?: 'top' | 'center' | 'spaceBetween' | 'bottom'
+  breakAfter?: boolean
+  visible?: boolean
+  horizontalItemArrangement?: 'real' | 'ratio'
+  verticalItemArrangement?: 'real' | 'ratio'
+}
+
+export interface IStyleProperties extends IAssignableProperties {
+  margin?: [number, number, number, number]
+  padding?: [number, number, number, number]
+}
+
+function isMarginOrPadding (name: any, value: any): value is IStyleProperties['margin' | 'padding'] {
+  return name === 'margin' || name === 'padding'
+}
+
 export default class Style {
 
   public position: 'relative' | 'absolute' = 'relative'
-  public top: number | null = null
-  public left: number | null = null
-  public bottom: number | null = null
-  public right: number | null = null
-  public width: number | 'full' | null = null
-  public height: number | 'full' | null = null
-  public layout: 'flow' | 'horizontalBox' | 'verticalBox' | null = null
-  public justifyContent: 'left' | 'center' | 'spaceBetween' | 'right' | null = null
-  public alignItems: 'top' | 'center' | 'spaceBetween' | 'bottom' | null = null
+  public top: number = null
+  public left: number = null
+  public bottom: number = null
+  public right: number = null
+  public width: number | 'full' = null
+  public height: number | 'full' = null
+  public layout: 'flow' | 'horizontalBox' | 'verticalBox' = 'flow'
+  public justifyContent: 'left' | 'center' | 'spaceBetween' | 'right' = 'left'
+  public alignItems: 'top' | 'center' | 'spaceBetween' | 'bottom' = 'top'
   public breakAfter: boolean = false
   public visible: boolean = true
   public horizontalItemArrangement: 'real' | 'ratio' = 'real'
@@ -20,6 +46,20 @@ export default class Style {
 
   private _margin: [number, number, number, number] = [0, 0, 0, 0]
   private _padding: [number, number, number, number] = [0, 0, 0, 0]
+
+  constructor (style?: IStyleProperties) {
+    _.each(style, (value: IStyleProperties[keyof IStyleProperties], name: keyof IStyleProperties) => {
+      if (isMarginOrPadding(name, value)) {
+        if (name === 'margin') {
+          this.setMargin(...value)
+        } else {
+          this.setPadding(...value)
+        }
+      } else if (name !== 'margin' && name !== 'padding') {
+        this[name] = value
+      }
+    })
+  }
 
   get margin() {
     return this._margin
@@ -61,27 +101,37 @@ export default class Style {
     return this._padding[3]
   }
 
-  public setMargin (margin: number, rightOrHorizontal?: number, bottom?: number, left?: number) {
-    if (left) {
-      this._margin = [margin, rightOrHorizontal, bottom, left]
-    } else if (bottom) {
-      this._margin = [margin, rightOrHorizontal, bottom, rightOrHorizontal]
-    } else if (rightOrHorizontal) {
-      this._margin = [margin, rightOrHorizontal, margin, rightOrHorizontal]
-    } else {
-      this._margin = [margin, margin, margin, margin]
+  public setMargin (...args: number[]) {
+    switch (args.length) {
+    case 4:
+      this._margin = [args[0], args[1], args[2], args[3]]
+      break
+    case 3:
+      this._margin = [args[0], args[1], args[2], args[1]]
+      break
+    case 2:
+      this._margin = [args[0], args[1], args[0], args[1]]
+      break
+    case 1:
+      this._margin = [args[0], args[0], args[0], args[0]]
+      break
     }
   }
 
-  public setPadding (padding: number, rightOrHorizontal?: number, bottom?: number, left?: number) {
-    if (left) {
-      this._padding = [padding, rightOrHorizontal, bottom, left]
-    } else if (bottom) {
-      this._padding = [padding, rightOrHorizontal, bottom, rightOrHorizontal]
-    } else if (rightOrHorizontal) {
-      this._padding = [padding, rightOrHorizontal, padding, rightOrHorizontal]
-    } else {
-      this._padding = [padding, padding, padding, padding]
+  public setPadding (...args: number[]) {
+    switch (args.length) {
+    case 4:
+      this._padding = [args[0], args[1], args[2], args[3]]
+      break
+    case 3:
+      this._padding = [args[0], args[1], args[2], args[1]]
+      break
+    case 2:
+      this._padding = [args[0], args[1], args[0], args[1]]
+      break
+    case 1:
+      this._padding = [args[0], args[0], args[0], args[0]]
+      break
     }
   }
 }

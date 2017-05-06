@@ -1,4 +1,4 @@
-import Style from './style';
+import Style, { IStyleProperties } from './style';
 export interface IWidthMeasurable {
     width: number;
 }
@@ -65,7 +65,7 @@ export default class Component implements IComponent {
     contentWidth: number;
     contentHeight: number;
     protected readonly style: Style;
-    constructor(id: string);
+    constructor(id: string, style?: IStyleProperties);
     readonly x: number;
     readonly y: number;
     readonly position: "relative" | "absolute";
@@ -74,7 +74,7 @@ export default class Component implements IComponent {
     readonly bottom: number;
     readonly right: number;
     readonly layout: "flow" | "horizontalBox" | "verticalBox";
-    readonly justifyContent: "center" | "left" | "spaceBetween" | "right";
+    readonly justifyContent: "left" | "right" | "center" | "spaceBetween";
     readonly alignItems: "center" | "spaceBetween" | "top" | "bottom";
     readonly breakAfter: boolean;
     readonly visible: boolean;

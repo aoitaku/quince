@@ -1,21 +1,42 @@
 /// <reference path="../typings/index.d.ts" />
+export interface IAssignableProperties {
+    position?: 'relative' | 'absolute';
+    top?: number;
+    left?: number;
+    bottom?: number;
+    right?: number;
+    width?: number | 'full';
+    height?: number | 'full';
+    layout?: 'flow' | 'horizontalBox' | 'verticalBox';
+    justifyContent?: 'left' | 'center' | 'spaceBetween' | 'right';
+    alignItems?: 'top' | 'center' | 'spaceBetween' | 'bottom';
+    breakAfter?: boolean;
+    visible?: boolean;
+    horizontalItemArrangement?: 'real' | 'ratio';
+    verticalItemArrangement?: 'real' | 'ratio';
+}
+export interface IStyleProperties extends IAssignableProperties {
+    margin?: [number, number, number, number];
+    padding?: [number, number, number, number];
+}
 export default class Style {
     position: 'relative' | 'absolute';
-    top: number | null;
-    left: number | null;
-    bottom: number | null;
-    right: number | null;
-    width: number | 'full' | null;
-    height: number | 'full' | null;
-    layout: 'flow' | 'horizontalBox' | 'verticalBox' | null;
-    justifyContent: 'left' | 'center' | 'spaceBetween' | 'right' | null;
-    alignItems: 'top' | 'center' | 'spaceBetween' | 'bottom' | null;
+    top: number;
+    left: number;
+    bottom: number;
+    right: number;
+    width: number | 'full';
+    height: number | 'full';
+    layout: 'flow' | 'horizontalBox' | 'verticalBox';
+    justifyContent: 'left' | 'center' | 'spaceBetween' | 'right';
+    alignItems: 'top' | 'center' | 'spaceBetween' | 'bottom';
     breakAfter: boolean;
     visible: boolean;
     horizontalItemArrangement: 'real' | 'ratio';
     verticalItemArrangement: 'real' | 'ratio';
     private _margin;
     private _padding;
+    constructor(style?: IStyleProperties);
     readonly margin: [number, number, number, number];
     readonly marginTop: number;
     readonly marginRight: number;
@@ -26,6 +47,6 @@ export default class Style {
     readonly paddingRight: number;
     readonly paddingBottom: number;
     readonly paddingLeft: number;
-    setMargin(margin: number, rightOrHorizontal?: number, bottom?: number, left?: number): void;
-    setPadding(padding: number, rightOrHorizontal?: number, bottom?: number, left?: number): void;
+    setMargin(...args: number[]): void;
+    setPadding(...args: number[]): void;
 }
