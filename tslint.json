@@ -10,6 +10,10 @@
     "quotemark": [true, "single", "avoid-escape"],
     "semicolon": [true, "never"],
     "no-reference": false,
+    "ordered-imports": [
+      false
+    ],
+    "object-literal-sort-keys": false,
     "space-before-function-paren": [true, "always"],
     "no-namespace": [true, "allow-declarations"],
     "no-console": [false],
