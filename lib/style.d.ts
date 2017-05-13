@@ -1,4 +1,3 @@
-/// <reference path="../typings/index.d.ts" />
 export interface IAssignableProperties {
     position?: 'relative' | 'absolute';
     top?: number;

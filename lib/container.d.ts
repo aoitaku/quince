@@ -1,4 +1,3 @@
-/// <reference path="../typings/index.d.ts" />
 import { ComponentConstructor, IComponent } from './component';
 export interface IContainer extends Iterable<IComponent> {
     components: IComponent[];

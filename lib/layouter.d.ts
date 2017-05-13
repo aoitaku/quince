@@ -1,4 +1,3 @@
-/// <reference path="../typings/index.d.ts" />
 import { ComponentConstructor, ISizeMeasurable } from './component';
 import { ContainerConstructor } from './container';
 import './lodash-chunk_by';

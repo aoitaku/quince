@@ -1,4 +1,3 @@
-/// <reference path='../typings/index.d.ts' />
 import * as _ from 'lodash'
 declare module 'lodash' {
   // tslint:disable-next-line:interface-name

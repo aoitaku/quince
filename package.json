@@ -17,6 +17,7 @@
     "url": "http://github.com/aoitaku/guiness.git"
   },
   "dependencies": {
+    "@types/lodash": "^4.14.64",
     "lodash": "^4.17.4"
   },
   "devDependencies": {

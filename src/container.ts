@@ -1,4 +1,3 @@
-/// <reference path='../typings/index.d.ts' />
 import * as _ from 'lodash'
 import Component, { ComponentConstructor, IComponent } from './component'
 
