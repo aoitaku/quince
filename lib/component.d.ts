@@ -74,7 +74,7 @@ export default class Component implements IComponent {
     readonly bottom: number;
     readonly right: number;
     readonly layout: "flow" | "horizontalBox" | "verticalBox";
-    readonly justifyContent: "left" | "right" | "center" | "spaceBetween";
+    readonly justifyContent: "left" | "center" | "spaceBetween" | "right";
     readonly alignItems: "center" | "spaceBetween" | "top" | "bottom";
     readonly breakAfter: boolean;
     readonly visible: boolean;
