@@ -14,6 +14,11 @@ export default function Layouter<T extends ComponentConstructor & ContainerConst
   return class extends base implements ILayouter {
     public resize (parent: ISizeMeasurable) {
       super.resize(parent)
+      if (this.components.length === 0) {
+        this.contentWidth = 0
+        this.contentHeight = 0
+        return
+      }
       switch (this.layout) {
       case 'flow':
         this.resizeComponentsForFlowLayout(parent)
@@ -31,6 +36,9 @@ export default function Layouter<T extends ComponentConstructor & ContainerConst
 
     public move (ox: number = 0, oy: number = 0, parent: ISizeMeasurable) {
       super.move(ox, oy, parent)
+      if (this.components.length === 0) {
+        return
+      }
       switch (this.layout) {
       case 'flow':
         this.moveComponentsForFlowLayout(ox, oy, parent)
