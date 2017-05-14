@@ -11,7 +11,7 @@ export type ContainerConstructor = new (...args: any[]) => IContainer
 
 export default function Container<T extends ComponentConstructor> (base: T): T & ContainerConstructor {
   return class extends base implements IContainer {
-    public components: IComponent[]
+    public components: IComponent[] = []
 
     public addComponent (component: IComponent) {
       this.components.push(component)
