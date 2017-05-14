@@ -4,7 +4,7 @@ import Component, { ComponentConstructor, IComponent } from './component'
 export interface IContainer extends Iterable<IComponent> {
   components: IComponent[]
   addComponent (component: IComponent): void
-  find (id: string): IComponent
+  find (id: string): IComponent | undefined
 }
 
 export type ContainerConstructor = new (...args: any[]) => IContainer

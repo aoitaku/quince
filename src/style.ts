@@ -29,12 +29,12 @@ function isMarginOrPadding (name: any, value: any): value is IStyleProperties['m
 export default class Style {
 
   public position: 'relative' | 'absolute' = 'relative'
-  public top: number = null
-  public left: number = null
-  public bottom: number = null
-  public right: number = null
-  public width: number | 'full' = null
-  public height: number | 'full' = null
+  public top?: number = undefined
+  public left?: number = undefined
+  public bottom?: number = undefined
+  public right?: number = undefined
+  public width?: number | 'full' = undefined
+  public height?: number | 'full' = undefined
   public layout: 'flow' | 'horizontalBox' | 'verticalBox' = 'flow'
   public justifyContent: 'left' | 'center' | 'spaceBetween' | 'right' = 'left'
   public alignItems: 'top' | 'center' | 'spaceBetween' | 'bottom' = 'top'
@@ -47,12 +47,19 @@ export default class Style {
   private _padding: [number, number, number, number] = [0, 0, 0, 0]
 
   constructor (style?: IStyleProperties) {
+    if (!style) {
+      return
+    }
     _.each(style, (value: IStyleProperties[keyof IStyleProperties], name: keyof IStyleProperties) => {
       if (isMarginOrPadding(name, value)) {
         if (name === 'margin') {
-          this.setMargin(...value)
+          if (value) {
+            this.setMargin(...value)
+          }
         } else {
-          this.setPadding(...value)
+          if (value) {
+            this.setPadding(...value)
+          }
         }
       } else if (name !== 'margin' && name !== 'padding') {
         this[name] = value

@@ -21,10 +21,10 @@ export interface IComponent {
   readonly x: number
   readonly y: number
   readonly position: 'relative' | 'absolute'
-  readonly top: number
-  readonly left: number
-  readonly bottom: number
-  readonly right: number
+  readonly top?: number
+  readonly left?: number
+  readonly bottom?: number
+  readonly right?: number
   readonly layout: 'flow' | 'horizontalBox' | 'verticalBox'
   readonly justifyContent: 'center' | 'left' | 'spaceBetween' | 'right'
   readonly alignItems: 'center' | 'spaceBetween' | 'top' | 'bottom'
@@ -264,20 +264,20 @@ export default class Component implements IComponent {
     if (this.style.width === 'full') {
       this.rawWidth = this.innerWidth(parent)
     } else if (!this.testIfComponent(parent) || parent.verticalItemArrangement === 'real') {
-      this.rawWidth = this.style.width
+      this.rawWidth = (this.style.width || 0)
     } else if (parent.verticalItemArrangement === 'ratio')  {
-      this.rawWidth = this.style.width * parent.width
+      this.rawWidth = (this.style.width || 0) * parent.width
     } else {
-      this.rawWidth = null
+      this.rawWidth = 0
     }
     if (this.style.height === 'full') {
       this.rawHeight = this.innerHeight(parent)
     } else if (!this.testIfComponent(parent) || parent.verticalItemArrangement === 'real') {
-      this.rawHeight = this.style.height
+      this.rawHeight = (this.style.height || 0)
     } else if (parent.verticalItemArrangement === 'ratio')  {
-      this.rawHeight = this.style.height * parent.height
+      this.rawHeight = (this.style.height || 0) * parent.height
     } else {
-      this.rawHeight = null
+      this.rawHeight = 0
     }
   }
 
