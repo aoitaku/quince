@@ -7,7 +7,7 @@ declare module 'lodash' {
 }
 _.mixin({
   chunkBy <T> (array: T[], predicate: (element: T) => boolean): T[][] {
-    return array.reduce((prev: T[][], current, index) => {
+    return _.reduce(array, (prev: T[][], current, index) => {
       if (prev.length === 0 || predicate(current)) {
         prev.push([current])
       } else {
