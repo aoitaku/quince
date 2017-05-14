@@ -60,8 +60,6 @@ export interface IComponent {
   resize (parent: ISizeMeasurable): void
 }
 
-export type ComponentConstructor = new (...args: any[]) => IComponent
-
 export default class Component implements IComponent {
 
   public readonly id: string

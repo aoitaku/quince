@@ -1,15 +1,11 @@
-import Style, { IStyleProperties } from './style'
-import Component, { IComponent } from './component'
-import Container, { IContainer } from './container'
-import Layouter, { ILayouter } from './layouter'
+import Style from './style'
+import Component from './component'
 
 export default {
   Style,
   Component,
-  Container,
-  Layouter,
 }
 export { IStyleProperties } from './style'
-export { IComponent } from './component'
+export { IComponent, ISizeMeasurable } from './component'
 export { IContainer } from './container'
-export { ILayouter } from './layouter'
+export { Layouter, ILayouter } from './layouter'
