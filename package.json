@@ -10,8 +10,8 @@
   ],
   "private": true,
   "author": "Taku Aoi<aoitaku@gmail.com>",
-  "main": "./lib/index.js",
-  "types": "./lib/index",
+  "main": "./src/index.ts",
+  "types": "./src/index",
   "repository": {
     "type": "git",
     "url": "http://github.com/aoitaku/guiness.git"
