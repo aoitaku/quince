@@ -1,7 +1,7 @@
 import * as _ from 'lodash'
 import Component, { ComponentConstructor, IComponent } from './component'
 
-export interface IContainer extends Iterable<IComponent> {
+export interface IContainer {
   components: IComponent[]
   addComponent (component: IComponent): void
   find (id: string): IComponent | undefined
@@ -19,15 +19,6 @@ export default function Container<T extends ComponentConstructor> (base: T): T &
 
     public find (id: string) {
       return _.find(this.components, (value, key) => value.id === id)
-    }
-
-    get [Symbol.iterator] () {
-      return this._each
-    }
-
-    private *_each () {
-      yield this
-      yield* this.components
     }
   }
 }

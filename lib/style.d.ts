@@ -20,12 +20,12 @@ export interface IStyleProperties extends IAssignableProperties {
 }
 export default class Style {
     position: 'relative' | 'absolute';
-    top: number;
-    left: number;
-    bottom: number;
-    right: number;
-    width: number | 'full';
-    height: number | 'full';
+    top?: number;
+    left?: number;
+    bottom?: number;
+    right?: number;
+    width?: number | 'full';
+    height?: number | 'full';
     layout: 'flow' | 'horizontalBox' | 'verticalBox';
     justifyContent: 'left' | 'center' | 'spaceBetween' | 'right';
     alignItems: 'top' | 'center' | 'spaceBetween' | 'bottom';

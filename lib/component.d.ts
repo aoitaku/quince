@@ -17,10 +17,10 @@ export interface IComponent {
     readonly x: number;
     readonly y: number;
     readonly position: 'relative' | 'absolute';
-    readonly top: number;
-    readonly left: number;
-    readonly bottom: number;
-    readonly right: number;
+    readonly top?: number;
+    readonly left?: number;
+    readonly bottom?: number;
+    readonly right?: number;
     readonly layout: 'flow' | 'horizontalBox' | 'verticalBox';
     readonly justifyContent: 'center' | 'left' | 'spaceBetween' | 'right';
     readonly alignItems: 'center' | 'spaceBetween' | 'top' | 'bottom';
@@ -69,10 +69,10 @@ export default class Component implements IComponent {
     readonly x: number;
     readonly y: number;
     readonly position: "relative" | "absolute";
-    readonly top: number;
-    readonly left: number;
-    readonly bottom: number;
-    readonly right: number;
+    readonly top: number | undefined;
+    readonly left: number | undefined;
+    readonly bottom: number | undefined;
+    readonly right: number | undefined;
     readonly layout: "flow" | "horizontalBox" | "verticalBox";
     readonly justifyContent: "left" | "center" | "spaceBetween" | "right";
     readonly alignItems: "center" | "spaceBetween" | "top" | "bottom";
@@ -103,7 +103,7 @@ export default class Component implements IComponent {
     verticalOffset(parent: Component): number;
     innerWidth(parent: Component | IWidthMeasurable): number;
     innerHeight(parent: Component | IHeightMeasurable): number;
-    relayout(ox: number, oy: number, parent: IComponent | ISizeMeasurable): void;
+    relayout(ox: number | undefined, oy: number | undefined, parent: IComponent | ISizeMeasurable): void;
     move(toX: number, toY: number, parent: ISizeMeasurable): void;
     resize(parent: IComponent | ISizeMeasurable): void;
     private moveX(toX, parent);
