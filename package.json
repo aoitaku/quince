@@ -2,6 +2,7 @@
   "name": "quince",
   "description": "quick user interface tool kit for JavaScript.",
   "version": "0.10.0",
+  "type": "module",
   "licenses": [
     {
       "type": "zlib",
@@ -16,6 +17,7 @@
     "type": "git",
     "url": "http://github.com/aoitaku/guiness.git"
   },
+  "packageManager": "pnpm@10.11.0",
   "dependencies": {
     "@types/lodash": "^4.14.64",
     "lodash": "^4.17.4"
@@ -23,6 +25,15 @@
   "devDependencies": {
     "tslint": "^5.2.0",
     "tslint-eslint-rules": "^4.0.0",
-    "typescript": "^2.3.2"
+    "tsx": "^4.21.0",
+    "typescript": "^2.3.2",
+    "vite": "^5.4.0",
+    "vitest": "^1.6.0"
+  },
+  "scripts": {
+    "build": "vite build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "example": "tsx examples/basic.ts"
   }
 }

@@ -3,6 +3,16 @@ import { Component, SizeMeasurable } from './component'
 import { Container } from './container'
 import './lodash-chunk_by'
 
+const chunkBy = <T>(array: T[], predicate: (element: T) => boolean): T[][] =>
+  array.reduce((prev, current) => {
+    if (prev.length === 0 || predicate(current)) {
+      prev.push([current])
+    } else {
+      prev[prev.length - 1].push(current)
+    }
+    return prev
+  }, [[]] as T[][])
+
 export interface Layoutable {
   layouter: Layouter
   resize (parent: SizeMeasurable): void
@@ -91,7 +101,7 @@ export class Layouter {
   private resizeComponentsForFlowLayout (component: Component & Container, parent: SizeMeasurable) {
     let verticalMargin = component.paddingTop
     component.contentWidth = component.rawWidth
-    component.contentHeight = _.reduce(_.chunkBy(_.forEach(component.components, (child) => {
+    component.contentHeight = _.reduce(chunkBy(_.forEach(component.components, (child) => {
       child.resize(component)
     }), this.testIfComponentsOverflow(component)), (height: number, row: Component[]) => {
       const child = _.maxBy(row, (col) => col.layoutHeight)!
@@ -111,7 +121,7 @@ export class Layouter {
     parent: SizeMeasurable,
   ) {
     let verticalMargin = component.paddingTop
-    return _.reduce(_.chunkBy(component.components, this.testIfComponentsOverflow(component)), (height: number, row: Component[]) => {
+    return _.reduce(chunkBy(component.components, this.testIfComponentsOverflow(component)), (height: number, row: Component[]) => {
       const tallestComponent = _.maxBy(row, (col) => col.layoutHeight)!
       const maxComponentHeight = tallestComponent.height
       const verticalSpace = Math.max(verticalMargin, tallestComponent.marginTop) + height
