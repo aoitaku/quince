@@ -13,6 +13,17 @@
   "author": "Taku Aoi<aoitaku@gmail.com>",
   "main": "./lib/index.js",
   "types": "./types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "import": "./lib/index.js",
+      "require": "./lib/index.cjs"
+    }
+  },
+  "files": [
+    "lib",
+    "types"
+  ],
   "repository": {
     "type": "git",
     "url": "http://github.com/aoitaku/guiness.git"
@@ -29,7 +40,7 @@
     "vitest": "^4.0.17"
   },
   "scripts": {
-    "build": "vite build",
+    "build": "pnpm run clean && pnpm run build:types && vite build",
     "build:types": "tsc -p tsconfig.build.json",
     "clean": "node -e \"import('node:fs').then(({rmSync})=>rmSync('types',{recursive:true,force:true}))\"",
     "typecheck": "tsc -p tsconfig.json",
