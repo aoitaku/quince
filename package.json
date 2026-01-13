@@ -1,7 +1,7 @@
 {
-  "name": "quiness",
-  "description": "quick user interface tool kit for ES.",
-  "version": "0.9.0",
+  "name": "quince",
+  "description": "quick user interface tool kit for JavaScript.",
+  "version": "0.10.0",
   "licenses": [
     {
       "type": "zlib",

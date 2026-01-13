@@ -1,67 +1,16 @@
-import Style, { IStyleProperties } from './style'
+import { Style, StyleProperties } from './style'
 
-export interface IWidthMeasurable {
+export type WidthMeasurable = {
   width: number
 }
 
-export interface IHeightMeasurable {
+export type HeightMeasurable = {
   height: number
 }
 
-export type ISizeMeasurable = IWidthMeasurable & IHeightMeasurable
+export type SizeMeasurable = WidthMeasurable & HeightMeasurable
 
-export interface IComponent {
-  readonly id: string
-  rawX: number
-  rawY: number
-  rawWidth: number
-  rawHeight: number
-  contentWidth: number
-  contentHeight: number
-  readonly x: number
-  readonly y: number
-  readonly position: 'relative' | 'absolute'
-  readonly top?: number
-  readonly left?: number
-  readonly bottom?: number
-  readonly right?: number
-  readonly layout: 'flow' | 'horizontalBox' | 'verticalBox'
-  readonly justifyContent: 'center' | 'left' | 'spaceBetween' | 'right'
-  readonly alignItems: 'center' | 'spaceBetween' | 'top' | 'bottom'
-  readonly breakAfter: boolean
-  readonly visible: boolean
-  readonly horizontalItemArrangement: 'real' | 'ratio'
-  readonly verticalItemArrangement: 'real' | 'ratio'
-  readonly paddingTop: number
-  readonly paddingRight: number
-  readonly paddingBottom: number
-  readonly paddingLeft: number
-  readonly width: number
-  readonly height: number
-  readonly layoutWidth: number
-  readonly layoutHeight: number
-  readonly marginTop: number
-  readonly marginRight: number
-  readonly marginBottom: number
-  readonly marginLeft: number
-  readonly horizontalMargin: number
-  readonly verticalMargin: number
-  offsetLeft (parent: Component): number
-  offsetRight (parent: Component): number
-  horizontalOffset (parent: Component): number
-  testIfComponent (obj: any): obj is Component
-  offsetTop (parent: Component): number
-  offsetBottom (parent: Component): number
-  verticalOffset (parent: Component): number
-  innerWidth (parent: Component | IWidthMeasurable): number
-  innerHeight (parent: Component | IHeightMeasurable): number
-  relayout (ox: number, oy: number, parent: ISizeMeasurable): void
-  move (toX: number, toY: number, parent: ISizeMeasurable): void
-  resize (parent: ISizeMeasurable): void
-}
-
-export default class Component implements IComponent {
-
+export class Component {
   public readonly id: string
   public rawX: number
   public rawY: number
@@ -71,7 +20,7 @@ export default class Component implements IComponent {
   public contentHeight: number
   protected readonly style: Style
 
-  constructor (id: string, style?: IStyleProperties) {
+  constructor (id: string, style?: StyleProperties) {
     this.id = id
     this.style = new Style(style)
   }
@@ -234,31 +183,31 @@ export default class Component implements IComponent {
     return this.offsetTop(parent) + this.offsetBottom(parent)
   }
 
-  public innerWidth (parent: Component | IWidthMeasurable) {
+  public innerWidth (parent: Component | WidthMeasurable) {
     if (this.testIfComponent(parent)) {
       return parent.width - this.horizontalOffset(parent)
     }
     return parent.width - this.horizontalMargin
   }
 
-  public innerHeight (parent: Component | IHeightMeasurable) {
+  public innerHeight (parent: Component | HeightMeasurable) {
     if (this.testIfComponent(parent)) {
       return parent.height - this.verticalOffset(parent)
     }
     return parent.height - this.verticalMargin
   }
 
-  public relayout (ox: number = 0, oy: number = 0, parent: IComponent | ISizeMeasurable) {
+  public relayout (ox: number = 0, oy: number = 0, parent: Component | SizeMeasurable) {
     this.resize(parent)
     this.move(ox, oy, parent)
   }
 
-  public move (toX: number, toY: number, parent: ISizeMeasurable) {
+  public move (toX: number, toY: number, parent: SizeMeasurable) {
     this.moveX(toX, parent)
     this.moveY(toY, parent)
   }
 
-  public resize (parent: IComponent | ISizeMeasurable) {
+  public resize (parent: Component | SizeMeasurable) {
     if (this.style.width === 'full') {
       this.rawWidth = this.innerWidth(parent)
     } else if (!this.testIfComponent(parent) || parent.verticalItemArrangement === 'real') {
@@ -279,7 +228,7 @@ export default class Component implements IComponent {
     }
   }
 
-  private moveX (toX: number, parent: ISizeMeasurable) {
+  private moveX (toX: number, parent: SizeMeasurable) {
     if (this.position === 'absolute') {
       if (this.left && typeof this.left === 'number') {
         if (Number.isInteger(this.left)) {
@@ -315,7 +264,7 @@ export default class Component implements IComponent {
     }
   }
 
-  private moveY (toY: number, parent: ISizeMeasurable) {
+  private moveY (toY: number, parent: SizeMeasurable) {
     if (this.position === 'absolute') {
       if (this.top && typeof this.top === 'number') {
         if (Number.isInteger(this.top)) {

@@ -1,16 +1,16 @@
 import * as _ from 'lodash'
-import Component, { IComponent, ISizeMeasurable } from './component'
-import Container, { IContainer } from './container'
+import { Component, SizeMeasurable } from './component'
+import { Container } from './container'
 import './lodash-chunk_by'
 
-export interface ILayouter {
+export interface Layoutable {
   layouter: Layouter
-  resize (parent: ISizeMeasurable): void
-  move (ox: number, oy: number, parent: ISizeMeasurable): void
+  resize (parent: SizeMeasurable): void
+  move (ox: number, oy: number, parent: SizeMeasurable): void
 }
 
 export class Layouter {
-  public resize (component: IComponent & IContainer, parent: ISizeMeasurable) {
+  public resize (component: Component & Container, parent: SizeMeasurable) {
     switch (component.layout) {
     case 'flow':
       this.resizeComponentsForFlowLayout(component, parent)
@@ -26,7 +26,7 @@ export class Layouter {
     }
   }
 
-  public move (component: IComponent & IContainer, ox: number = 0, oy: number = 0, parent: ISizeMeasurable) {
+  public move (component: Component & Container, ox: number = 0, oy: number = 0, parent: SizeMeasurable) {
     switch (component.layout) {
     case 'flow':
       this.moveComponentsForFlowLayout(component, ox, oy, parent)
@@ -42,7 +42,7 @@ export class Layouter {
     }
   }
 
-  private testIfComponentsOverflow (component: IComponent) {
+  private testIfComponentsOverflow (component: Component) {
     let horizontalMargin = component.paddingLeft
     let width = 0
     const maxWidth = component.contentWidth
@@ -73,9 +73,9 @@ export class Layouter {
     }
   }
 
-  private evaluateRowWidth (component: IComponent, withExtraCalcuration?: (child: IComponent, horizontalSpace: number) => number) {
+  private evaluateRowWidth (component: Component, withExtraCalcuration?: (child: Component, horizontalSpace: number) => number) {
     let horizontalMargin = component.paddingLeft
-    return (width: number, child: IComponent) => {
+    return (width: number, child: Component) => {
       let horizontalSpace = Math.max(horizontalMargin, child.marginLeft) + width
       if (withExtraCalcuration) {
         horizontalSpace = withExtraCalcuration(child, horizontalSpace)
@@ -88,13 +88,13 @@ export class Layouter {
     }
   }
 
-  private resizeComponentsForFlowLayout (component: IComponent & IContainer, parent: ISizeMeasurable) {
+  private resizeComponentsForFlowLayout (component: Component & Container, parent: SizeMeasurable) {
     let verticalMargin = component.paddingTop
     component.contentWidth = component.rawWidth
     component.contentHeight = _.reduce(_.chunkBy(_.forEach(component.components, (child) => {
       child.resize(component)
     }), this.testIfComponentsOverflow(component)), (height: number, row: Component[]) => {
-      const child = _.maxBy(row, (col) => col.layoutHeight)
+      const child = _.maxBy(row, (col) => col.layoutHeight)!
       if (child.position === 'absolute') {
         return height
       }
@@ -105,23 +105,23 @@ export class Layouter {
   }
 
   private moveComponentsForFlowLayout (
-    component: IComponent & IContainer,
+    component: Component & Container,
     ox: number = 0,
     oy: number = 0,
-    parent: ISizeMeasurable,
+    parent: SizeMeasurable,
   ) {
     let verticalMargin = component.paddingTop
     return _.reduce(_.chunkBy(component.components, this.testIfComponentsOverflow(component)), (height: number, row: Component[]) => {
-      const tallestComponent = _.maxBy(row, (col) => col.layoutHeight)
+      const tallestComponent = _.maxBy(row, (col) => col.layoutHeight)!
       const maxComponentHeight = tallestComponent.height
       const verticalSpace = Math.max(verticalMargin, tallestComponent.marginTop) + height
       verticalMargin = tallestComponent.marginBottom
-      const innerWidth = _.reduce(row, this.evaluateRowWidth(component), 0) + Math.max(_.last(row).marginRight, component.paddingRight)
+      const innerWidth = _.reduce(row, this.evaluateRowWidth(component), 0) + Math.max(_.last(row)!.marginRight, component.paddingRight)
       _.reduce(row, this.evaluateRowWidth(component, (child, horizontalSpace) => {
         let x = component.x + horizontalSpace
         switch (component.justifyContent) {
         case 'spaceBetween':
-          if (row.length > 1 && !_.last(row).breakAfter) {
+          if (row.length > 1 && !_.last(row)!.breakAfter) {
             horizontalSpace += (component.width - innerWidth) / (row.length - 1.0)
           }
           break
@@ -152,7 +152,7 @@ export class Layouter {
     }, 0)
   }
 
-  private resizeComponentsForVerticalBox (component: IComponent & IContainer, parent: ISizeMeasurable) {
+  private resizeComponentsForVerticalBox (component: Component & Container, parent: SizeMeasurable) {
     let verticalMargin = component.paddingTop
     component.contentHeight = _.reduce(component.components, (height: number, child: Component) => {
       const verticalSpace = Math.max(verticalMargin, child.marginTop) + height
@@ -172,10 +172,10 @@ export class Layouter {
   }
 
   private moveComponentsForVerticalBox (
-    component: IComponent & IContainer,
+    component: Component & Container,
     ox: number = 0,
     oy: number = 0,
-    parent: ISizeMeasurable,
+    parent: SizeMeasurable,
   ) {
     let verticalMargin = component.paddingTop
     _.reduce(component.components, (height: number, child: Component) => {
@@ -217,7 +217,7 @@ export class Layouter {
     }, 0)
   }
 
-  private resizeComponentsForHorizontalBox (component: IComponent & IContainer, parent: ISizeMeasurable) {
+  private resizeComponentsForHorizontalBox (component: Component & Container, parent: SizeMeasurable) {
     let horizontalMargin = component.paddingLeft
     component.contentWidth = _.reduce(component.components, (width: number, child: Component) => {
       child.resize(component)
@@ -237,10 +237,10 @@ export class Layouter {
   }
 
   private moveComponentsForHorizontalBox (
-    component: IComponent & IContainer,
+    component: Component & Container,
     ox: number = 0,
     oy: number = 0,
-    parent: ISizeMeasurable,
+    parent: SizeMeasurable,
   ) {
     let horizontalMargin = component.paddingLeft
     _.reduce(component.components, (width: number, child: Component) => {

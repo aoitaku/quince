@@ -1,8 +1,7 @@
-import * as _ from 'lodash'
-import { IComponent } from './component'
+import { Component } from './component'
 
-export interface IContainer {
-  components: IComponent[]
-  addComponent (component: IComponent): void
-  find (id: string): IComponent | undefined
+export interface Container {
+  components: Component[]
+  addComponent (component: Component): void
+  find (id: string): Component | undefined
 }

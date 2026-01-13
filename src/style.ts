@@ -1,68 +1,112 @@
-import * as _ from 'lodash'
+type PositionProperty = { position: 'relative' | 'absolute' }
+type TopProperty = { top: number }
+type LeftProperty = { left: number }
+type BottomProperty = { bottom: number }
+type RightProperty = { right: number }
+type WidthProperty = { width: number | 'full' }
+type HeightProperty = { height: number | 'full' }
+type LayoutProperty = { layout: 'flow' | 'horizontalBox' | 'verticalBox' }
+type JustifyContentProperty = { justifyContent: 'left' | 'center' | 'spaceBetween' | 'right' }
+type AlignItemsProperty = { alignItems: 'top' | 'center' | 'spaceBetween' | 'bottom' }
+type BreakAfterProperty = { breakAfter: boolean }
+type VisibilityProperty = { visible: boolean }
+type HorizontalItemArrangementProperty = { horizontalItemArrangement: 'real' | 'ratio' }
+type VerticalItemArrangementProperty = { verticalItemArrangement: 'real' | 'ratio' }
 
-export interface IAssignableProperties {
-  position?: 'relative' | 'absolute'
-  top?: number
-  left?: number
-  bottom?: number
-  right?: number
-  width?: number | 'full'
-  height?: number | 'full'
-  layout?: 'flow' | 'horizontalBox' | 'verticalBox'
-  justifyContent?: 'left' | 'center' | 'spaceBetween' | 'right'
-  alignItems?: 'top' | 'center' | 'spaceBetween' | 'bottom'
-  breakAfter?: boolean
-  visible?: boolean
-  horizontalItemArrangement?: 'real' | 'ratio'
-  verticalItemArrangement?: 'real' | 'ratio'
-}
+type PositionPropertyEntry = [keyof PositionProperty, PositionProperty[keyof PositionProperty]]
+type TopPropertyEntry = [keyof TopProperty, TopProperty[keyof TopProperty]]
+type LeftPropertyEntry = [keyof LeftProperty, LeftProperty[keyof LeftProperty]]
+type BottomPropertyEntry = [keyof BottomProperty, BottomProperty[keyof BottomProperty]]
+type RightPropertyEntry = [keyof RightProperty, RightProperty[keyof RightProperty]]
+type WidthPropertyEntry = [keyof WidthProperty, WidthProperty[keyof WidthProperty]]
+type HeightPropertyEntry = [keyof HeightProperty, HeightProperty[keyof HeightProperty]]
+type LayoutPropertyEntry = [keyof LayoutProperty, LayoutProperty[keyof LayoutProperty]]
+type JustifyContentPropertyEntry = [keyof JustifyContentProperty, JustifyContentProperty[keyof JustifyContentProperty]]
+type AlignItemsPropertyEntry = [keyof AlignItemsProperty, AlignItemsProperty[keyof AlignItemsProperty]]
+type BreakAfterPropertyEntry = [keyof BreakAfterProperty, BreakAfterProperty[keyof BreakAfterProperty]]
+type VisibilityPropertyEntry = [keyof VisibilityProperty, VisibilityProperty[keyof VisibilityProperty]]
+type HorizontalItemArrangementPropertyEntry = [keyof HorizontalItemArrangementProperty, HorizontalItemArrangementProperty[keyof HorizontalItemArrangementProperty]]
+type VerticalItemArrangementPropertyEntry = [keyof VerticalItemArrangementProperty, VerticalItemArrangementProperty[keyof VerticalItemArrangementProperty]]
+type AssignablePropertyEntries =
+  PositionPropertyEntry
+  | TopPropertyEntry
+  | LeftPropertyEntry
+  | BottomPropertyEntry
+  | RightPropertyEntry
+  | WidthPropertyEntry
+  | HeightPropertyEntry
+  | LayoutPropertyEntry
+  | JustifyContentPropertyEntry
+  | AlignItemsPropertyEntry
+  | BreakAfterPropertyEntry
+  | VisibilityPropertyEntry
+  | HorizontalItemArrangementPropertyEntry
+  | VerticalItemArrangementPropertyEntry
+export type AssignableProperties = Partial<PositionProperty>
+  & Partial<TopProperty>
+  & Partial<LeftProperty>
+  & Partial<BottomProperty>
+  & Partial<RightProperty>
+  & Partial<WidthProperty>
+  & Partial<HeightProperty>
+  & Partial<LayoutProperty>
+  & Partial<JustifyContentProperty>
+  & Partial<AlignItemsProperty>
+  & Partial<BreakAfterProperty>
+  & Partial<VisibilityProperty>
+  & Partial<HorizontalItemArrangementProperty>
+  & Partial<VerticalItemArrangementProperty>
 
-export interface IStyleProperties extends IAssignableProperties {
-  margin?: [number, number, number, number]
-  padding?: [number, number, number, number]
-}
+type MarginProperty = { margin: [number] | [number, number] | [number, number, number] | [number, number, number, number] }
+type PaddingProperty = { padding: [number] | [number, number] | [number, number, number] | [number, number, number, number] }
+export type StyleProperties = AssignableProperties
+  & Partial<MarginProperty>
+  & Partial<PaddingProperty>
+type MarginPropertyEntry = [keyof MarginProperty, MarginProperty[keyof MarginProperty]]
+type PaddingPropertyEntry = [keyof PaddingProperty, PaddingProperty[keyof PaddingProperty]]
+type StylePropertyEntries = AssignablePropertyEntries | MarginPropertyEntry | PaddingPropertyEntry
 
-function isMarginOrPadding (name: any, value: any): value is IStyleProperties['margin' | 'padding'] {
+function isMarginOrPadding (name: keyof StyleProperties, value: unknown): value is StyleProperties['margin' | 'padding'] {
   return name === 'margin' || name === 'padding'
 }
 
-export default class Style {
-
-  public position: 'relative' | 'absolute' = 'relative'
-  public top?: number = undefined
-  public left?: number = undefined
-  public bottom?: number = undefined
-  public right?: number = undefined
-  public width?: number | 'full' = undefined
-  public height?: number | 'full' = undefined
-  public layout: 'flow' | 'horizontalBox' | 'verticalBox' = 'flow'
-  public justifyContent: 'left' | 'center' | 'spaceBetween' | 'right' = 'left'
-  public alignItems: 'top' | 'center' | 'spaceBetween' | 'bottom' = 'top'
-  public breakAfter: boolean = false
-  public visible: boolean = true
-  public horizontalItemArrangement: 'real' | 'ratio' = 'real'
-  public verticalItemArrangement: 'real' | 'ratio' = 'real'
+export class Style {
+  public position: PositionProperty[keyof PositionProperty] = 'relative'
+  public top?: TopProperty[keyof TopProperty] = undefined
+  public left?: LeftProperty[keyof LeftProperty] = undefined
+  public bottom?: BottomProperty[keyof BottomProperty] = undefined
+  public right?: RightProperty[keyof RightProperty] = undefined
+  public width?: WidthProperty[keyof WidthProperty] = undefined
+  public height?: HeightProperty[keyof HeightProperty] = undefined
+  public layout: LayoutProperty[keyof LayoutProperty] = 'flow'
+  public justifyContent: JustifyContentProperty[keyof JustifyContentProperty] = 'left'
+  public alignItems: AlignItemsProperty[keyof AlignItemsProperty] = 'top'
+  public breakAfter: BreakAfterProperty[keyof BreakAfterProperty] = false
+  public visible: VisibilityProperty[keyof VisibilityProperty] = true
+  public horizontalItemArrangement: HorizontalItemArrangementProperty[keyof HorizontalItemArrangementProperty] = 'real'
+  public verticalItemArrangement: VerticalItemArrangementProperty[keyof VerticalItemArrangementProperty] = 'real'
 
   private _margin: [number, number, number, number] = [0, 0, 0, 0]
   private _padding: [number, number, number, number] = [0, 0, 0, 0]
 
-  constructor (style?: IStyleProperties) {
+  constructor (style?: StyleProperties) {
     if (!style) {
       return
     }
-    _.each(style, (value: IStyleProperties[keyof IStyleProperties], name: keyof IStyleProperties) => {
+    Object.entries(style).forEach((entry: StylePropertyEntries) => {
+      const [name, value] = entry
       if (isMarginOrPadding(name, value)) {
         if (name === 'margin') {
           if (value) {
-            this.setMargin(...value)
+            this.setMargin(value)
           }
         } else {
           if (value) {
-            this.setPadding(...value)
+            this.setPadding(value)
           }
         }
       } else if (name !== 'margin' && name !== 'padding') {
-        this[name] = value
+        Object.assign(this, { [name]: value })
       }
     })
   }
@@ -107,7 +151,7 @@ export default class Style {
     return this._padding[3]
   }
 
-  public setMargin (...args: number[]) {
+  public setMargin (args: MarginProperty[keyof MarginProperty]) {
     switch (args.length) {
     case 4:
       this._margin = [args[0], args[1], args[2], args[3]]
@@ -124,7 +168,7 @@ export default class Style {
     }
   }
 
-  public setPadding (...args: number[]) {
+  public setPadding (args: PaddingProperty[keyof PaddingProperty]) {
     switch (args.length) {
     case 4:
       this._padding = [args[0], args[1], args[2], args[3]]
