@@ -66,7 +66,7 @@ type MarginPropertyEntry = [keyof MarginProperty, MarginProperty[keyof MarginPro
 type PaddingPropertyEntry = [keyof PaddingProperty, PaddingProperty[keyof PaddingProperty]]
 type StylePropertyEntries = AssignablePropertyEntries | MarginPropertyEntry | PaddingPropertyEntry
 
-function isMarginOrPadding (name: keyof StyleProperties, value: unknown): value is StyleProperties['margin' | 'padding'] {
+function isMarginOrPadding(name: keyof StyleProperties, value: unknown): value is StyleProperties['margin' | 'padding'] {
   return name === 'margin' || name === 'padding'
 }
 
@@ -89,7 +89,7 @@ export class Style {
   private _margin: [number, number, number, number] = [0, 0, 0, 0]
   private _padding: [number, number, number, number] = [0, 0, 0, 0]
 
-  constructor (style?: StyleProperties) {
+  constructor(style?: StyleProperties) {
     if (!style) {
       return
     }
@@ -115,19 +115,19 @@ export class Style {
     return this._margin
   }
 
-  get marginTop () {
+  get marginTop() {
     return this._margin[0]
   }
 
-  get marginRight () {
+  get marginRight() {
     return this._margin[1]
   }
 
-  get marginBottom () {
+  get marginBottom() {
     return this._margin[2]
   }
 
-  get marginLeft () {
+  get marginLeft() {
     return this._margin[3]
   }
 
@@ -135,53 +135,53 @@ export class Style {
     return this._padding
   }
 
-  get paddingTop () {
+  get paddingTop() {
     return this._padding[0]
   }
 
-  get paddingRight () {
+  get paddingRight() {
     return this._padding[1]
   }
 
-  get paddingBottom () {
+  get paddingBottom() {
     return this._padding[2]
   }
 
-  get paddingLeft () {
+  get paddingLeft() {
     return this._padding[3]
   }
 
-  public setMargin (args: MarginProperty[keyof MarginProperty]) {
+  public setMargin(args: MarginProperty[keyof MarginProperty]) {
     switch (args.length) {
-    case 4:
-      this._margin = [args[0], args[1], args[2], args[3]]
-      break
-    case 3:
-      this._margin = [args[0], args[1], args[2], args[1]]
-      break
-    case 2:
-      this._margin = [args[0], args[1], args[0], args[1]]
-      break
-    case 1:
-      this._margin = [args[0], args[0], args[0], args[0]]
-      break
+      case 4:
+        this._margin = [args[0], args[1], args[2], args[3]]
+        break
+      case 3:
+        this._margin = [args[0], args[1], args[2], args[1]]
+        break
+      case 2:
+        this._margin = [args[0], args[1], args[0], args[1]]
+        break
+      case 1:
+        this._margin = [args[0], args[0], args[0], args[0]]
+        break
     }
   }
 
-  public setPadding (args: PaddingProperty[keyof PaddingProperty]) {
+  public setPadding(args: PaddingProperty[keyof PaddingProperty]) {
     switch (args.length) {
-    case 4:
-      this._padding = [args[0], args[1], args[2], args[3]]
-      break
-    case 3:
-      this._padding = [args[0], args[1], args[2], args[1]]
-      break
-    case 2:
-      this._padding = [args[0], args[1], args[0], args[1]]
-      break
-    case 1:
-      this._padding = [args[0], args[0], args[0], args[0]]
-      break
+      case 4:
+        this._padding = [args[0], args[1], args[2], args[3]]
+        break
+      case 3:
+        this._padding = [args[0], args[1], args[2], args[1]]
+        break
+      case 2:
+        this._padding = [args[0], args[1], args[0], args[1]]
+        break
+      case 1:
+        this._padding = [args[0], args[0], args[0], args[0]]
+        break
     }
   }
 }

@@ -1,58 +1,66 @@
-import * as _ from 'lodash'
 import { Component, SizeMeasurable } from './component'
 import { Container } from './container'
-import './lodash-chunk_by'
 
 const chunkBy = <T>(array: T[], predicate: (element: T) => boolean): T[][] =>
   array.reduce((prev, current) => {
-    if (prev.length === 0 || predicate(current)) {
+    const shouldBreak = predicate(current)
+    if (prev.length === 0 || shouldBreak) {
       prev.push([current])
     } else {
       prev[prev.length - 1].push(current)
     }
     return prev
-  }, [[]] as T[][])
+  }, [] as T[][])
+
+const maxBy = <T>(array: T[], selector: (item: T) => number): T | undefined => {
+  if (array.length === 0) {
+    return undefined
+  }
+  return array.reduce((best, current) => (selector(current) > selector(best) ? current : best))
+}
+
+const last = <T>(array: T[]): T | undefined => array[array.length - 1]
 
 export interface Layoutable {
   layouter: Layouter
-  resize (parent: SizeMeasurable): void
-  move (ox: number, oy: number, parent: SizeMeasurable): void
+  resize(parent: SizeMeasurable): void
+  move(ox: number, oy: number, parent: SizeMeasurable): void
 }
 
 export class Layouter {
-  public resize (component: Component & Container, parent: SizeMeasurable) {
+  public resize(component: Component & Container, parent: SizeMeasurable) {
     switch (component.layout) {
-    case 'flow':
-      this.resizeComponentsForFlowLayout(component, parent)
-      break
-    case 'horizontalBox':
-      this.resizeComponentsForHorizontalBox(component, parent)
-      break
-    case 'verticalBox':
-      this.resizeComponentsForVerticalBox(component, parent)
-      break
-    default:
-      break
+      case 'flow':
+        this.resizeComponentsForFlowLayout(component, parent)
+        break
+      case 'horizontalBox':
+        this.resizeComponentsForHorizontalBox(component, parent)
+        break
+      case 'verticalBox':
+        this.resizeComponentsForVerticalBox(component, parent)
+        break
+      default:
+        break
     }
   }
 
-  public move (component: Component & Container, ox: number = 0, oy: number = 0, parent: SizeMeasurable) {
+  public move(component: Component & Container, ox: number = 0, oy: number = 0, parent: SizeMeasurable) {
     switch (component.layout) {
-    case 'flow':
-      this.moveComponentsForFlowLayout(component, ox, oy, parent)
-      break
-    case 'horizontalBox':
-      this.moveComponentsForHorizontalBox(component, ox, oy, parent)
-      break
-    case 'verticalBox':
-      this.moveComponentsForVerticalBox(component, ox, oy, parent)
-      break
-    default:
-      break
+      case 'flow':
+        this.moveComponentsForFlowLayout(component, ox, oy, parent)
+        break
+      case 'horizontalBox':
+        this.moveComponentsForHorizontalBox(component, ox, oy, parent)
+        break
+      case 'verticalBox':
+        this.moveComponentsForVerticalBox(component, ox, oy, parent)
+        break
+      default:
+        break
     }
   }
 
-  private testIfComponentsOverflow (component: Component) {
+  private testIfComponentsOverflow(component: Component) {
     let horizontalMargin = component.paddingLeft
     let width = 0
     const maxWidth = component.contentWidth
@@ -83,7 +91,7 @@ export class Layouter {
     }
   }
 
-  private evaluateRowWidth (component: Component, withExtraCalcuration?: (child: Component, horizontalSpace: number) => number) {
+  private evaluateRowWidth(component: Component, withExtraCalcuration?: (child: Component, horizontalSpace: number) => number) {
     let horizontalMargin = component.paddingLeft
     return (width: number, child: Component) => {
       let horizontalSpace = Math.max(horizontalMargin, child.marginLeft) + width
@@ -98,13 +106,16 @@ export class Layouter {
     }
   }
 
-  private resizeComponentsForFlowLayout (component: Component & Container, parent: SizeMeasurable) {
+  private resizeComponentsForFlowLayout(component: Component & Container, _parent: SizeMeasurable) {
     let verticalMargin = component.paddingTop
     component.contentWidth = component.rawWidth
-    component.contentHeight = _.reduce(chunkBy(_.forEach(component.components, (child) => {
+    component.components.forEach((child) => {
       child.resize(component)
-    }), this.testIfComponentsOverflow(component)), (height: number, row: Component[]) => {
-      const child = _.maxBy(row, (col) => col.layoutHeight)!
+    })
+    component.contentHeight = chunkBy(component.components, this.testIfComponentsOverflow(component))
+      .filter((row) => row.length > 0)
+      .reduce((height: number, row: Component[]) => {
+      const child = maxBy(row, (col) => col.layoutHeight)!
       if (child.position === 'absolute') {
         return height
       }
@@ -114,42 +125,44 @@ export class Layouter {
     }, 0) + Math.max(verticalMargin, component.paddingBottom)
   }
 
-  private moveComponentsForFlowLayout (
+  private moveComponentsForFlowLayout(
     component: Component & Container,
-    ox: number = 0,
-    oy: number = 0,
-    parent: SizeMeasurable,
+    _ox: number = 0,
+    _oy: number = 0,
+    _parent: SizeMeasurable,
   ) {
     let verticalMargin = component.paddingTop
-    return _.reduce(chunkBy(component.components, this.testIfComponentsOverflow(component)), (height: number, row: Component[]) => {
-      const tallestComponent = _.maxBy(row, (col) => col.layoutHeight)!
+    return chunkBy(component.components, this.testIfComponentsOverflow(component))
+      .filter((row) => row.length > 0)
+      .reduce((height: number, row: Component[]) => {
+      const tallestComponent = maxBy(row, (col) => col.layoutHeight)!
       const maxComponentHeight = tallestComponent.height
       const verticalSpace = Math.max(verticalMargin, tallestComponent.marginTop) + height
       verticalMargin = tallestComponent.marginBottom
-      const innerWidth = _.reduce(row, this.evaluateRowWidth(component), 0) + Math.max(_.last(row)!.marginRight, component.paddingRight)
-      _.reduce(row, this.evaluateRowWidth(component, (child, horizontalSpace) => {
+      const innerWidth = row.reduce(this.evaluateRowWidth(component), 0) + Math.max(last(row)!.marginRight, component.paddingRight)
+      row.reduce(this.evaluateRowWidth(component, (child, horizontalSpace) => {
         let x = component.x + horizontalSpace
         switch (component.justifyContent) {
-        case 'spaceBetween':
-          if (row.length > 1 && !_.last(row)!.breakAfter) {
-            horizontalSpace += (component.width - innerWidth) / (row.length - 1.0)
-          }
-          break
-        case 'center':
-          x += (component.width - innerWidth) / 2.0
-          break
-        case 'right':
-          x += (component.width - innerWidth)
-          break
+          case 'spaceBetween':
+            if (row.length > 1 && !last(row)!.breakAfter) {
+              horizontalSpace += (component.width - innerWidth) / (row.length - 1.0)
+            }
+            break
+          case 'center':
+            x += (component.width - innerWidth) / 2.0
+            break
+          case 'right':
+            x += (component.width - innerWidth)
+            break
         }
         let y = component.y + verticalSpace
         switch (component.alignItems) {
-        case 'center':
-          y += (maxComponentHeight - child.height) / 2.0
-          break
-        case 'bottom':
-          y += (maxComponentHeight - child.height)
-          break
+          case 'center':
+            y += (maxComponentHeight - child.height) / 2.0
+            break
+          case 'bottom':
+            y += (maxComponentHeight - child.height)
+            break
         }
         if (child.position === 'absolute') {
           child.move(component.x, component.y, component)
@@ -162,9 +175,9 @@ export class Layouter {
     }, 0)
   }
 
-  private resizeComponentsForVerticalBox (component: Component & Container, parent: SizeMeasurable) {
+  private resizeComponentsForVerticalBox(component: Component & Container, _parent: SizeMeasurable) {
     let verticalMargin = component.paddingTop
-    component.contentHeight = _.reduce(component.components, (height: number, child: Component) => {
+    component.contentHeight = component.components.reduce((height: number, child: Component) => {
       const verticalSpace = Math.max(verticalMargin, child.marginTop) + height
       child.resize(component)
       if (child.position === 'absolute') {
@@ -173,7 +186,7 @@ export class Layouter {
       verticalMargin = child.marginBottom
       return verticalSpace + child.height
     }, 0) + Math.max(verticalMargin, component.paddingBottom)
-    const widestComponent = _.maxBy(component.components, (child) => child.layoutWidth)
+    const widestComponent = maxBy(component.components, (child) => child.layoutWidth)
     if (widestComponent) {
       component.contentWidth = widestComponent.width +
         Math.max(widestComponent.marginLeft, component.paddingLeft) +
@@ -181,38 +194,38 @@ export class Layouter {
     }
   }
 
-  private moveComponentsForVerticalBox (
+  private moveComponentsForVerticalBox(
     component: Component & Container,
-    ox: number = 0,
-    oy: number = 0,
-    parent: SizeMeasurable,
+    _ox: number = 0,
+    _oy: number = 0,
+    _parent: SizeMeasurable,
   ) {
     let verticalMargin = component.paddingTop
-    _.reduce(component.components, (height: number, child: Component) => {
+    component.components.reduce((height: number, child: Component) => {
       const horizontalSpace = Math.max(component.paddingLeft, child.marginLeft)
       let verticalSpace = Math.max(verticalMargin, child.marginTop) + height
       let x = component.x + horizontalSpace
       switch (component.justifyContent) {
-      case 'center':
-        x += (child.innerWidth(component) - child.width) / 2
-        break
-      case 'right':
-        x += (child.innerWidth(component) - child.width)
-        break
+        case 'center':
+          x += (child.innerWidth(component) - child.width) / 2
+          break
+        case 'right':
+          x += (child.innerWidth(component) - child.width)
+          break
       }
       let y = component.y + verticalSpace
       switch (component.alignItems) {
-      case 'spaceBetween':
-        if (component.rawHeight && component.components.length > 1) {
-          verticalSpace += (component.rawHeight - component.contentHeight) / (component.components.length - 1)
-        }
-        break
-      case 'center':
-        y += (component.rawHeight ? (component.rawHeight - component.contentHeight) / 2 : 0)
-        break
-      case 'bottom':
-        y += (component.rawHeight ? component.rawHeight - component.contentHeight : 0)
-        break
+        case 'spaceBetween':
+          if (component.rawHeight && component.components.length > 1) {
+            verticalSpace += (component.rawHeight - component.contentHeight) / (component.components.length - 1)
+          }
+          break
+        case 'center':
+          y += (component.rawHeight ? (component.rawHeight - component.contentHeight) / 2 : 0)
+          break
+        case 'bottom':
+          y += (component.rawHeight ? component.rawHeight - component.contentHeight : 0)
+          break
       }
       if (child.position === 'absolute') {
         child.move(component.x, component.y, component)
@@ -227,9 +240,9 @@ export class Layouter {
     }, 0)
   }
 
-  private resizeComponentsForHorizontalBox (component: Component & Container, parent: SizeMeasurable) {
+  private resizeComponentsForHorizontalBox(component: Component & Container, _parent: SizeMeasurable) {
     let horizontalMargin = component.paddingLeft
-    component.contentWidth = _.reduce(component.components, (width: number, child: Component) => {
+    component.contentWidth = component.components.reduce((width: number, child: Component) => {
       child.resize(component)
       if (child.position === 'absolute') {
         return width
@@ -238,7 +251,7 @@ export class Layouter {
       horizontalMargin = child.marginRight
       return horizontalSpace + child.width
     }, 0) + Math.max(horizontalMargin, component.paddingRight)
-    const tallestComponent = _.maxBy(component.components, (child: Component) => child.layoutHeight)
+    const tallestComponent = maxBy(component.components, (child: Component) => child.layoutHeight)
     if (tallestComponent) {
       component.contentHeight = tallestComponent.height +
         Math.max(tallestComponent.marginTop, component.paddingTop) +
@@ -246,38 +259,38 @@ export class Layouter {
     }
   }
 
-  private moveComponentsForHorizontalBox (
+  private moveComponentsForHorizontalBox(
     component: Component & Container,
-    ox: number = 0,
-    oy: number = 0,
-    parent: SizeMeasurable,
+    _ox: number = 0,
+    _oy: number = 0,
+    _parent: SizeMeasurable,
   ) {
     let horizontalMargin = component.paddingLeft
-    _.reduce(component.components, (width: number, child: Component) => {
+    component.components.reduce((width: number, child: Component) => {
       let horizontalSpace = Math.max(horizontalMargin, child.marginLeft) + width
       const verticalSpace = Math.max(component.paddingTop, component.marginTop)
       let x = component.x + horizontalSpace
       switch (component.justifyContent) {
-      case 'spaceBetween':
-        if (component.rawWidth && component.components.length > 1) {
-          horizontalSpace += (component.rawWidth - component.contentWidth) / (component.components.length - 1)
-        }
-        break
-      case 'center':
-        x += (component.rawWidth ? (component.rawWidth - component.contentWidth) / 2 : 0)
-        break
-      case 'right':
-        x += (component.rawWidth ? component.rawWidth - component.contentWidth : 0)
-        break
+        case 'spaceBetween':
+          if (component.rawWidth && component.components.length > 1) {
+            horizontalSpace += (component.rawWidth - component.contentWidth) / (component.components.length - 1)
+          }
+          break
+        case 'center':
+          x += (component.rawWidth ? (component.rawWidth - component.contentWidth) / 2 : 0)
+          break
+        case 'right':
+          x += (component.rawWidth ? component.rawWidth - component.contentWidth : 0)
+          break
       }
       let y = component.y + verticalSpace
       switch (component.alignItems) {
-      case 'center':
-        y += (child.innerHeight(component) - child.height) / 2
-        break
-      case 'bottom':
-        y += child.innerHeight(component) - child.height
-        break
+        case 'center':
+          y += (child.innerHeight(component) - child.height) / 2
+          break
+        case 'bottom':
+          y += child.innerHeight(component) - child.height
+          break
       }
       if (component.position === 'absolute') {
         child.move(component.x, component.y, component)

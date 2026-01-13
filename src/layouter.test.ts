@@ -154,3 +154,96 @@ describe('Layouter examples', () => {
     ])
   })
 })
+
+describe('Layouter edge cases', () => {
+  it('forces a new flow row when breakAfter is set', () => {
+    const flow = new Box('flow', {
+      layout: 'flow',
+      width: 200,
+      height: 100,
+    })
+
+    const first = new Component('first', { width: 80, height: 10, breakAfter: true })
+    expect(first.breakAfter).toBe(true)
+    flow.addComponent(first)
+    flow.addComponent(new Component('second', { width: 80, height: 20 }))
+
+    flow.relayout(0, 0, { width: 200, height: 100 })
+
+    expect(flow.components.map(snapshotComponent)).toEqual([
+      { id: 'first', x: 0, y: 0, w: 80, h: 10 },
+      { id: 'second', x: 0, y: 10, w: 80, h: 20 },
+    ])
+  })
+
+  it('wraps to the next row when flow width overflows', () => {
+    const flow = new Box('flow', {
+      layout: 'flow',
+      width: 160,
+      height: 100,
+      padding: [0],
+    })
+
+    flow.addComponent(new Component('first', { width: 80, height: 10 }))
+    flow.addComponent(new Component('second', { width: 80, height: 10 }))
+    flow.addComponent(new Component('third', { width: 80, height: 10 }))
+
+    flow.relayout(0, 0, { width: 160, height: 100 })
+
+    expect(flow.components.map(snapshotComponent)).toEqual([
+      { id: 'first', x: 0, y: 0, w: 80, h: 10 },
+      { id: 'second', x: 80, y: 0, w: 80, h: 10 },
+      { id: 'third', x: 0, y: 10, w: 80, h: 10 },
+    ])
+  })
+
+  it('supports ratio sizing based on parent verticalItemArrangement', () => {
+    const parent = new Component('parent', {
+      width: 200,
+      height: 100,
+      verticalItemArrangement: 'ratio',
+    })
+
+    parent.resize({ width: 200, height: 100 })
+
+    const child = new Component('child', { width: 0.5, height: 0.25 })
+    child.resize(parent)
+
+    expect(snapshotComponent(child)).toEqual({
+      id: 'child',
+      x: undefined,
+      y: undefined,
+      w: 100,
+      h: 25,
+    })
+  })
+
+  it('positions absolute children using fractional offsets', () => {
+    const parent = new Component('parent', {
+      width: 200,
+      height: 100,
+    })
+
+    parent.resize({ width: 200, height: 100 })
+    parent.move(10, 20, { width: 200, height: 100 })
+
+    const child = new Component('child', {
+      width: 40,
+      height: 20,
+      position: 'absolute',
+      left: 0.5,
+      top: 0.5,
+    })
+
+    child.resize(parent)
+    child.move(parent.x, parent.y, parent)
+
+    expect(snapshotComponent(child)).toEqual({
+      id: 'child',
+      x: 90,
+      y: 60,
+      w: 40,
+      h: 20,
+    })
+  })
+})
