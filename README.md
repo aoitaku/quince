@@ -30,3 +30,11 @@ pnpm run test
 ```sh
 pnpm run lint
 ```
+
+## Examples
+
+```sh
+pnpm run example:canvas
+```
+
+Open http://localhost:5173/ in the browser.

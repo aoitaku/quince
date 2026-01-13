@@ -47,6 +47,7 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "example": "tsx examples/basic.ts"
+    "example:basic": "tsx examples/basic.ts",
+    "example:canvas": "vite dev examples/canvas"
   }
 }
