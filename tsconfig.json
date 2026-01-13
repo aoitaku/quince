@@ -1,21 +1,27 @@
 {
-    "compilerOptions": {
-        "module": "commonjs",
-        "target": "es5",
-        "lib": [
-            "es2022"
-        ],
-        "allowSyntheticDefaultImports": true,
-        "noImplicitAny": true,
-        "sourceMap": false,
-        "declaration": true,
-        "outDir": "lib/",
-        "strictNullChecks": true
-    },
-    "exclude": [
-        "node_modules"
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": [
+      "ES2020",
+      "DOM"
     ],
-    "files": [
-        "./src/index.ts"
-    ]
+    "allowSyntheticDefaultImports": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "noImplicitAny": true,
+    "skipLibCheck": true,
+    "strictNullChecks": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": [
+    "src/**/*.ts",
+    "examples/**/*.ts",
+    "vite.config.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "lib"
+  ]
 }

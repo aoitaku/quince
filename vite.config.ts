@@ -1,7 +1,9 @@
-import { defineConfig } from 'vitest/config'
+import { defineConfig } from 'vite'
 
 export default defineConfig({
   build: {
+    outDir: 'lib',
+    minify: 'oxc',
     lib: {
       entry: 'src/index.ts',
       name: 'quince',
@@ -14,8 +16,5 @@ export default defineConfig({
         exports: 'named',
       },
     },
-  },
-  test: {
-    include: ['src/**/*.test.ts'],
   },
 })
