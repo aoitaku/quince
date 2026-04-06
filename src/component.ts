@@ -12,12 +12,12 @@ export type SizeMeasurable = WidthMeasurable & HeightMeasurable
 
 export class Component {
   public readonly id: string
-  public rawX?: number
-  public rawY?: number
-  public rawWidth?: number
-  public rawHeight?: number
-  public contentWidth?: number
-  public contentHeight?: number
+  public rawX: number
+  public rawY: number
+  public rawWidth: number
+  public rawHeight: number
+  public contentWidth: number
+  public contentHeight: number
   protected readonly style: Style
 
   constructor(id: string, style?: StyleProperties) {
