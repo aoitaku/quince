@@ -12,12 +12,12 @@ export type SizeMeasurable = WidthMeasurable & HeightMeasurable
 
 export class Component {
   public readonly id: string
-  public rawX: number
-  public rawY: number
-  public rawWidth: number
-  public rawHeight: number
-  public contentWidth: number
-  public contentHeight: number
+  public rawX?: number
+  public rawY?: number
+  public rawWidth?: number
+  public rawHeight?: number
+  public contentWidth?: number
+  public contentHeight?: number
   protected readonly style: Style
 
   constructor(id: string, style?: StyleProperties) {
@@ -210,9 +210,9 @@ export class Component {
   public resize(parent: Component | SizeMeasurable) {
     if (this.style.width === 'full') {
       this.rawWidth = this.innerWidth(parent)
-    } else if (!this.testIfComponent(parent) || parent.verticalItemArrangement === 'real') {
+    } else if (!this.testIfComponent(parent) || parent.horizontalItemArrangement === 'real') {
       this.rawWidth = (this.style.width || 0)
-    } else if (parent.verticalItemArrangement === 'ratio') {
+    } else if (parent.horizontalItemArrangement === 'ratio') {
       this.rawWidth = (this.style.width || 0) * parent.width
     } else {
       this.rawWidth = 0
