@@ -1,7 +1,19 @@
-import { Component } from './component'
+import type { Component } from './component'
 
-export interface Container {
+export type Container = {
   components: Component[]
-  addComponent(component: Component): void
-  find(id: string): Component | undefined
+}
+
+export function createContainer(components: Component[] = []): Container {
+  return {
+    components,
+  }
+}
+
+export function addComponent(container: Container, component: Component) {
+  container.components.push(component)
+}
+
+export function findComponent(container: Container, id: string) {
+  return container.components.find((component) => component.id === id)
 }

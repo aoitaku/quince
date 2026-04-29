@@ -13,35 +13,6 @@ type VisibilityProperty = { visible: boolean }
 type HorizontalItemArrangementProperty = { horizontalItemArrangement: 'real' | 'ratio' }
 type VerticalItemArrangementProperty = { verticalItemArrangement: 'real' | 'ratio' }
 
-type PositionPropertyEntry = [keyof PositionProperty, PositionProperty[keyof PositionProperty]]
-type TopPropertyEntry = [keyof TopProperty, TopProperty[keyof TopProperty]]
-type LeftPropertyEntry = [keyof LeftProperty, LeftProperty[keyof LeftProperty]]
-type BottomPropertyEntry = [keyof BottomProperty, BottomProperty[keyof BottomProperty]]
-type RightPropertyEntry = [keyof RightProperty, RightProperty[keyof RightProperty]]
-type WidthPropertyEntry = [keyof WidthProperty, WidthProperty[keyof WidthProperty]]
-type HeightPropertyEntry = [keyof HeightProperty, HeightProperty[keyof HeightProperty]]
-type LayoutPropertyEntry = [keyof LayoutProperty, LayoutProperty[keyof LayoutProperty]]
-type JustifyContentPropertyEntry = [keyof JustifyContentProperty, JustifyContentProperty[keyof JustifyContentProperty]]
-type AlignItemsPropertyEntry = [keyof AlignItemsProperty, AlignItemsProperty[keyof AlignItemsProperty]]
-type BreakAfterPropertyEntry = [keyof BreakAfterProperty, BreakAfterProperty[keyof BreakAfterProperty]]
-type VisibilityPropertyEntry = [keyof VisibilityProperty, VisibilityProperty[keyof VisibilityProperty]]
-type HorizontalItemArrangementPropertyEntry = [keyof HorizontalItemArrangementProperty, HorizontalItemArrangementProperty[keyof HorizontalItemArrangementProperty]]
-type VerticalItemArrangementPropertyEntry = [keyof VerticalItemArrangementProperty, VerticalItemArrangementProperty[keyof VerticalItemArrangementProperty]]
-type AssignablePropertyEntries =
-  PositionPropertyEntry
-  | TopPropertyEntry
-  | LeftPropertyEntry
-  | BottomPropertyEntry
-  | RightPropertyEntry
-  | WidthPropertyEntry
-  | HeightPropertyEntry
-  | LayoutPropertyEntry
-  | JustifyContentPropertyEntry
-  | AlignItemsPropertyEntry
-  | BreakAfterPropertyEntry
-  | VisibilityPropertyEntry
-  | HorizontalItemArrangementPropertyEntry
-  | VerticalItemArrangementPropertyEntry
 export type AssignableProperties = Partial<PositionProperty>
   & Partial<TopProperty>
   & Partial<LeftProperty>
@@ -57,131 +28,127 @@ export type AssignableProperties = Partial<PositionProperty>
   & Partial<HorizontalItemArrangementProperty>
   & Partial<VerticalItemArrangementProperty>
 
-type MarginProperty = { margin: [number] | [number, number] | [number, number, number] | [number, number, number, number] }
-type PaddingProperty = { padding: [number] | [number, number] | [number, number, number] | [number, number, number, number] }
+export type BoxSpacing = [number] | [number, number] | [number, number, number] | [number, number, number, number]
+export type BoxSpacingEdges = [number, number, number, number]
+type MarginProperty = { margin: BoxSpacing }
+type PaddingProperty = { padding: BoxSpacing }
+
 export type StyleProperties = AssignableProperties
   & Partial<MarginProperty>
   & Partial<PaddingProperty>
-type MarginPropertyEntry = [keyof MarginProperty, MarginProperty[keyof MarginProperty]]
-type PaddingPropertyEntry = [keyof PaddingProperty, PaddingProperty[keyof PaddingProperty]]
-type StylePropertyEntries = AssignablePropertyEntries | MarginPropertyEntry | PaddingPropertyEntry
 
-function isMarginOrPadding(name: keyof StyleProperties, value: unknown): value is StyleProperties['margin' | 'padding'] {
-  return name === 'margin' || name === 'padding'
+export type Style = {
+  position: PositionProperty[keyof PositionProperty]
+  top?: TopProperty[keyof TopProperty]
+  left?: LeftProperty[keyof LeftProperty]
+  bottom?: BottomProperty[keyof BottomProperty]
+  right?: RightProperty[keyof RightProperty]
+  width?: WidthProperty[keyof WidthProperty]
+  height?: HeightProperty[keyof HeightProperty]
+  layout: LayoutProperty[keyof LayoutProperty]
+  justifyContent: JustifyContentProperty[keyof JustifyContentProperty]
+  alignItems: AlignItemsProperty[keyof AlignItemsProperty]
+  breakAfter: BreakAfterProperty[keyof BreakAfterProperty]
+  visible: VisibilityProperty[keyof VisibilityProperty]
+  horizontalItemArrangement: HorizontalItemArrangementProperty[keyof HorizontalItemArrangementProperty]
+  verticalItemArrangement: VerticalItemArrangementProperty[keyof VerticalItemArrangementProperty]
+  margin: BoxSpacingEdges
+  padding: BoxSpacingEdges
 }
 
-export class Style {
-  public position: PositionProperty[keyof PositionProperty] = 'relative'
-  public top?: TopProperty[keyof TopProperty] = undefined
-  public left?: LeftProperty[keyof LeftProperty] = undefined
-  public bottom?: BottomProperty[keyof BottomProperty] = undefined
-  public right?: RightProperty[keyof RightProperty] = undefined
-  public width?: WidthProperty[keyof WidthProperty] = undefined
-  public height?: HeightProperty[keyof HeightProperty] = undefined
-  public layout: LayoutProperty[keyof LayoutProperty] = 'flow'
-  public justifyContent: JustifyContentProperty[keyof JustifyContentProperty] = 'left'
-  public alignItems: AlignItemsProperty[keyof AlignItemsProperty] = 'top'
-  public breakAfter: BreakAfterProperty[keyof BreakAfterProperty] = false
-  public visible: VisibilityProperty[keyof VisibilityProperty] = true
-  public horizontalItemArrangement: HorizontalItemArrangementProperty[keyof HorizontalItemArrangementProperty] = 'real'
-  public verticalItemArrangement: VerticalItemArrangementProperty[keyof VerticalItemArrangementProperty] = 'real'
+export function normalizeBoxSpacing(args: BoxSpacing): BoxSpacingEdges {
+  switch (args.length) {
+    case 4:
+      return [args[0], args[1], args[2], args[3]]
+    case 3:
+      return [args[0], args[1], args[2], args[1]]
+    case 2:
+      return [args[0], args[1], args[0], args[1]]
+    case 1:
+      return [args[0], args[0], args[0], args[0]]
+  }
+}
 
-  private _margin: [number, number, number, number] = [0, 0, 0, 0]
-  private _padding: [number, number, number, number] = [0, 0, 0, 0]
-
-  constructor(style?: StyleProperties) {
-    if (!style) {
-      return
-    }
-    Object.entries(style).forEach((entry: StylePropertyEntries) => {
-      const [name, value] = entry
-      if (isMarginOrPadding(name, value)) {
-        if (name === 'margin') {
-          if (value) {
-            this.setMargin(value)
-          }
-        } else {
-          if (value) {
-            this.setPadding(value)
-          }
-        }
-      } else if (name !== 'margin' && name !== 'padding') {
-        Object.assign(this, { [name]: value })
-      }
-    })
+export function createStyle(properties?: StyleProperties): Style {
+  let style: Style = {
+    position: 'relative',
+    top: undefined,
+    left: undefined,
+    bottom: undefined,
+    right: undefined,
+    width: undefined,
+    height: undefined,
+    layout: 'flow',
+    justifyContent: 'left',
+    alignItems: 'top',
+    breakAfter: false,
+    visible: true,
+    horizontalItemArrangement: 'real',
+    verticalItemArrangement: 'real',
+    margin: [0, 0, 0, 0],
+    padding: [0, 0, 0, 0],
   }
 
-  get margin() {
-    return this._margin
+  if (!properties) {
+    return style
   }
 
-  get marginTop() {
-    return this._margin[0]
+  const { margin, padding, ...assignableProperties } = properties
+  style = {
+    ...style,
+    ...assignableProperties,
   }
+  if (margin) {
+    style = setMargin(style, margin)
+  }
+  if (padding) {
+    style = setPadding(style, padding)
+  }
+  return style
+}
 
-  get marginRight() {
-    return this._margin[1]
+export function setMargin(style: Style, margin: BoxSpacing): Style {
+  return {
+    ...style,
+    margin: normalizeBoxSpacing(margin),
   }
+}
 
-  get marginBottom() {
-    return this._margin[2]
+export function setPadding(style: Style, padding: BoxSpacing): Style {
+  return {
+    ...style,
+    padding: normalizeBoxSpacing(padding),
   }
+}
 
-  get marginLeft() {
-    return this._margin[3]
-  }
+export function getMarginTop(style: Style) {
+  return style.margin[0]
+}
 
-  get padding() {
-    return this._padding
-  }
+export function getMarginRight(style: Style) {
+  return style.margin[1]
+}
 
-  get paddingTop() {
-    return this._padding[0]
-  }
+export function getMarginBottom(style: Style) {
+  return style.margin[2]
+}
 
-  get paddingRight() {
-    return this._padding[1]
-  }
+export function getMarginLeft(style: Style) {
+  return style.margin[3]
+}
 
-  get paddingBottom() {
-    return this._padding[2]
-  }
+export function getPaddingTop(style: Style) {
+  return style.padding[0]
+}
 
-  get paddingLeft() {
-    return this._padding[3]
-  }
+export function getPaddingRight(style: Style) {
+  return style.padding[1]
+}
 
-  public setMargin(args: MarginProperty[keyof MarginProperty]) {
-    switch (args.length) {
-      case 4:
-        this._margin = [args[0], args[1], args[2], args[3]]
-        break
-      case 3:
-        this._margin = [args[0], args[1], args[2], args[1]]
-        break
-      case 2:
-        this._margin = [args[0], args[1], args[0], args[1]]
-        break
-      case 1:
-        this._margin = [args[0], args[0], args[0], args[0]]
-        break
-    }
-  }
+export function getPaddingBottom(style: Style) {
+  return style.padding[2]
+}
 
-  public setPadding(args: PaddingProperty[keyof PaddingProperty]) {
-    switch (args.length) {
-      case 4:
-        this._padding = [args[0], args[1], args[2], args[3]]
-        break
-      case 3:
-        this._padding = [args[0], args[1], args[2], args[1]]
-        break
-      case 2:
-        this._padding = [args[0], args[1], args[0], args[1]]
-        break
-      case 1:
-        this._padding = [args[0], args[0], args[0], args[0]]
-        break
-    }
-  }
+export function getPaddingLeft(style: Style) {
+  return style.padding[3]
 }

@@ -1,4 +1,16 @@
-import { Style, StyleProperties } from './style'
+import {
+  createStyle,
+  getMarginBottom as getStyleMarginBottom,
+  getMarginLeft as getStyleMarginLeft,
+  getMarginRight as getStyleMarginRight,
+  getMarginTop as getStyleMarginTop,
+  getPaddingBottom as getStylePaddingBottom,
+  getPaddingLeft as getStylePaddingLeft,
+  getPaddingRight as getStylePaddingRight,
+  getPaddingTop as getStylePaddingTop,
+  type Style,
+  type StyleProperties,
+} from './style'
 
 export type WidthMeasurable = {
   width: number
@@ -10,293 +22,316 @@ export type HeightMeasurable = {
 
 export type SizeMeasurable = WidthMeasurable & HeightMeasurable
 
-export class Component {
-  public readonly id: string
-  public rawX: number
-  public rawY: number
-  public rawWidth: number
-  public rawHeight: number
-  public contentWidth: number
-  public contentHeight: number
-  protected readonly style: Style
+export type Component = {
+  id: string
+  rawX: number | undefined
+  rawY: number | undefined
+  rawWidth: number | undefined
+  rawHeight: number | undefined
+  contentWidth: number | undefined
+  contentHeight: number | undefined
+  style: Style
+}
 
-  constructor(id: string, style?: StyleProperties) {
-    this.id = id
-    this.style = new Style(style)
+export function createComponent(id: string, style?: StyleProperties): Component {
+  return {
+    id,
+    rawX: undefined,
+    rawY: undefined,
+    rawWidth: undefined,
+    rawHeight: undefined,
+    contentWidth: undefined,
+    contentHeight: undefined,
+    style: createStyle(style),
   }
+}
 
-  get x() {
-    return this.rawX
+export function getX(component: Component) {
+  return component.rawX
+}
+
+export function getY(component: Component) {
+  return component.rawY
+}
+
+export function getPosition(component: Component) {
+  return component.style.position
+}
+
+export function getTop(component: Component) {
+  return component.style.top || 0
+}
+
+export function getLeft(component: Component) {
+  return component.style.left || 0
+}
+
+export function getBottom(component: Component) {
+  return component.style.bottom || 0
+}
+
+export function getRight(component: Component) {
+  return component.style.right || 0
+}
+
+export function getLayout(component: Component) {
+  return component.style.layout
+}
+
+export function getJustifyContent(component: Component) {
+  return component.style.justifyContent
+}
+
+export function getAlignItems(component: Component) {
+  return component.style.alignItems
+}
+
+export function getBreakAfter(component: Component) {
+  return component.style.breakAfter
+}
+
+export function getVisible(component: Component) {
+  return component.style.visible
+}
+
+export function getHorizontalItemArrangement(component: Component) {
+  return component.style.horizontalItemArrangement
+}
+
+export function getVerticalItemArrangement(component: Component) {
+  return component.style.verticalItemArrangement
+}
+
+export function getPaddingTop(component: Component) {
+  return getStylePaddingTop(component.style)
+}
+
+export function getPaddingRight(component: Component) {
+  return getStylePaddingRight(component.style)
+}
+
+export function getPaddingBottom(component: Component) {
+  return getStylePaddingBottom(component.style)
+}
+
+export function getPaddingLeft(component: Component) {
+  return getStylePaddingLeft(component.style)
+}
+
+export function getWidth(component: Component | WidthMeasurable) {
+  if(testIfComponent(component)) {
+    return component.rawWidth || component.contentWidth || 0
   }
+  return component.width
+}
 
-  get y() {
-    return this.rawY
+export function getHeight(component: Component | HeightMeasurable) {
+  if(testIfComponent(component)) {
+    return component.rawHeight || component.contentHeight || 0
   }
+  return component.height
+}
 
-  get position() {
-    return this.style.position
+export function getLayoutWidth(component: Component) {
+  if (getPosition(component) === 'absolute') {
+    return 0
   }
+  return getWidth(component) + getMarginLeft(component) + getMarginRight(component)
+}
 
-  get top() {
-    return this.style.top
+export function getLayoutHeight(component: Component) {
+  if (getPosition(component) === 'absolute') {
+    return 0
   }
+  return getHeight(component) + getMarginTop(component) + getMarginBottom(component)
+}
 
-  get left() {
-    return this.style.left
+export function getMarginTop(component: Component) {
+  if (getPosition(component) === 'absolute') {
+    return 0
   }
+  return getStyleMarginTop(component.style)
+}
 
-  get bottom() {
-    return this.style.bottom
+export function getMarginRight(component: Component) {
+  if (getPosition(component) === 'absolute') {
+    return 0
   }
+  return getStyleMarginRight(component.style)
+}
 
-  get right() {
-    return this.style.right
+export function getMarginBottom(component: Component) {
+  if (getPosition(component) === 'absolute') {
+    return 0
   }
+  return getStyleMarginBottom(component.style)
+}
 
-  get layout() {
-    return this.style.layout
+export function getMarginLeft(component: Component) {
+  if (getPosition(component) === 'absolute') {
+    return 0
   }
+  return getStyleMarginLeft(component.style)
+}
 
-  get justifyContent() {
-    return this.style.justifyContent
+export function getHorizontalMargin(component: Component) {
+  return getMarginLeft(component) + getMarginRight(component)
+}
+
+export function getOffsetLeft(component: Component, parent: Component) {
+  return Math.max(getPaddingLeft(parent), getMarginLeft(component))
+}
+
+export function getOffsetRight(component: Component, parent: Component) {
+  return Math.max(getPaddingRight(parent), getMarginRight(component))
+}
+
+export function getHorizontalOffset(component: Component, parent: Component) {
+  return getOffsetLeft(component, parent) + getOffsetLeft(component, parent)
+}
+
+export function getVerticalMargin(component: Component) {
+  return getMarginTop(component) + getMarginBottom(component)
+}
+
+export function getOffsetTop(component: Component, parent: Component) {
+  return Math.max(getPaddingTop(parent), getMarginTop(component))
+}
+
+export function getOffsetBottom(component: Component, parent: Component) {
+  return Math.max(getPaddingBottom(parent), getMarginBottom(component))
+}
+
+export function getVerticalOffset(component: Component, parent: Component) {
+  return getOffsetTop(component, parent) + getOffsetBottom(component, parent)
+}
+
+export function getInnerWidth(component: Component, parent: Component | WidthMeasurable) {
+  if (testIfComponent(parent)) {
+    return getWidth(parent) - getHorizontalOffset(component, parent)
   }
+  return getWidth(parent) - getHorizontalMargin(component)
+}
 
-  get alignItems() {
-    return this.style.alignItems
+export function getInnerHeight(component: Component, parent: Component | HeightMeasurable) {
+  if (testIfComponent(parent)) {
+    return getHeight(parent) - getVerticalOffset(component, parent)
   }
+  return getHeight(parent) - getVerticalMargin(component)
+}
 
-  get breakAfter() {
-    return this.style.breakAfter
+export function testIfComponent(obj: unknown): obj is Component {
+  return typeof obj === 'object'
+    && obj != null
+    && Object.hasOwn(obj, 'id')
+    && Object.hasOwn(obj, 'rawX')
+    && Object.hasOwn(obj, 'rawY')
+    && Object.hasOwn(obj, 'rawWidth')
+    && Object.hasOwn(obj, 'rawHeight')
+    && Object.hasOwn(obj, 'contentWidth')
+    && Object.hasOwn(obj, 'contentHeight')
+    && Object.hasOwn(obj, 'style')
+}
+
+export function relayout(component: Component, ox: number = 0, oy: number = 0, parent: Component | SizeMeasurable) {
+  resize(component, parent)
+  move(component, ox, oy, parent)
+}
+
+export function move(component: Component, toX: number, toY: number, parent: Component | SizeMeasurable) {
+  moveX(component, toX, parent)
+  moveY(component, toY, parent)
+}
+
+export function resize(component: Component, parent: Component | SizeMeasurable) {
+  if (component.style.width === 'full') {
+    component.rawWidth = getInnerWidth(component, parent)
+  } else if (!testIfComponent(parent) || getHorizontalItemArrangement(parent) === 'real') {
+    component.rawWidth = (component.style.width || 0)
+  } else if (getHorizontalItemArrangement(parent) === 'ratio') {
+    component.rawWidth = (component.style.width || 0) * getWidth(parent)
+  } else {
+    component.rawWidth = 0
   }
-
-  get visible() {
-    return this.style.visible
+  if (component.style.height === 'full') {
+    component.rawHeight = getInnerHeight(component, parent)
+  } else if (!testIfComponent(parent) || getVerticalItemArrangement(parent) === 'real') {
+    component.rawHeight = (component.style.height || 0)
+  } else if (getVerticalItemArrangement(parent) === 'ratio') {
+    component.rawHeight = (component.style.height || 0) * getHeight(parent)
+  } else {
+    component.rawHeight = 0
   }
+}
 
-  get horizontalItemArrangement() {
-    return this.style.horizontalItemArrangement
-  }
-
-  get verticalItemArrangement() {
-    return this.style.verticalItemArrangement
-  }
-
-  get paddingTop() {
-    return this.style.paddingTop
-  }
-
-  get paddingRight() {
-    return this.style.paddingRight
-  }
-
-  get paddingBottom() {
-    return this.style.paddingBottom
-  }
-
-  get paddingLeft() {
-    return this.style.paddingLeft
-  }
-
-  get width() {
-    return this.rawWidth || this.contentWidth || 0
-  }
-
-  get height() {
-    return this.rawHeight || this.contentHeight || 0
-  }
-
-  get layoutWidth() {
-    if (this.position === 'absolute') {
-      return 0
-    }
-    return this.width + this.marginLeft + this.marginRight
-  }
-
-  get layoutHeight() {
-    if (this.position === 'absolute') {
-      return 0
-    }
-    return this.height + this.marginTop + this.marginBottom
-  }
-
-  get marginTop() {
-    if (this.position === 'absolute') {
-      return 0
-    }
-    return this.style.marginTop
-  }
-
-  get marginRight() {
-    if (this.position === 'absolute') {
-      return 0
-    }
-    return this.style.marginRight
-  }
-
-  get marginBottom() {
-    if (this.position === 'absolute') {
-      return 0
-    }
-    return this.style.marginBottom
-  }
-
-  get marginLeft() {
-    if (this.position === 'absolute') {
-      return 0
-    }
-    return this.style.marginLeft
-  }
-
-  get horizontalMargin() {
-    return this.marginLeft + this.marginRight
-  }
-
-  public offsetLeft(parent: Component) {
-    return Math.max(parent.paddingLeft, this.marginLeft)
-  }
-
-  public offsetRight(parent: Component) {
-    return Math.max(parent.paddingRight, this.marginRight)
-  }
-
-  public horizontalOffset(parent: Component) {
-    return this.offsetLeft(parent) + this.offsetLeft(parent)
-  }
-
-  public testIfComponent(obj: unknown): obj is Component {
-    return obj instanceof Component
-  }
-
-  get verticalMargin() {
-    return this.marginTop + this.marginBottom
-  }
-
-  public offsetTop(parent: Component) {
-    return Math.max(parent.paddingTop, this.marginTop)
-  }
-
-  public offsetBottom(parent: Component) {
-    return Math.max(parent.paddingBottom, this.marginBottom)
-  }
-
-  public verticalOffset(parent: Component) {
-    return this.offsetTop(parent) + this.offsetBottom(parent)
-  }
-
-  public innerWidth(parent: Component | WidthMeasurable) {
-    if (this.testIfComponent(parent)) {
-      return parent.width - this.horizontalOffset(parent)
-    }
-    return parent.width - this.horizontalMargin
-  }
-
-  public innerHeight(parent: Component | HeightMeasurable) {
-    if (this.testIfComponent(parent)) {
-      return parent.height - this.verticalOffset(parent)
-    }
-    return parent.height - this.verticalMargin
-  }
-
-  public relayout(ox: number = 0, oy: number = 0, parent: Component | SizeMeasurable) {
-    this.resize(parent)
-    this.move(ox, oy, parent)
-  }
-
-  public move(toX: number, toY: number, parent: SizeMeasurable) {
-    this.moveX(toX, parent)
-    this.moveY(toY, parent)
-  }
-
-  public resize(parent: Component | SizeMeasurable) {
-    if (this.style.width === 'full') {
-      this.rawWidth = this.innerWidth(parent)
-    } else if (!this.testIfComponent(parent) || parent.horizontalItemArrangement === 'real') {
-      this.rawWidth = (this.style.width || 0)
-    } else if (parent.horizontalItemArrangement === 'ratio') {
-      this.rawWidth = (this.style.width || 0) * parent.width
-    } else {
-      this.rawWidth = 0
-    }
-    if (this.style.height === 'full') {
-      this.rawHeight = this.innerHeight(parent)
-    } else if (!this.testIfComponent(parent) || parent.verticalItemArrangement === 'real') {
-      this.rawHeight = (this.style.height || 0)
-    } else if (parent.verticalItemArrangement === 'ratio') {
-      this.rawHeight = (this.style.height || 0) * parent.height
-    } else {
-      this.rawHeight = 0
-    }
-  }
-
-  private moveX(toX: number, parent: SizeMeasurable) {
-    if (this.position === 'absolute') {
-      if (this.left && typeof this.left === 'number') {
-        if (Number.isInteger(this.left)) {
-          this.rawX = toX + this.left
-        } else {
-          this.rawX = toX + (parent.width - this.width) * this.left
-        }
-      } else if (this.right && typeof this.right === 'number') {
-        if (Number.isInteger(this.right)) {
-          this.rawX = toX + parent.width - this.width - this.right
-        } else {
-          this.rawX = toX + (parent.width - this.width) * (1 - this.right)
-        }
+export function moveX(component: Component, toX: number, parent: Component | SizeMeasurable) {
+  if (getPosition(component) === 'absolute') {
+    if (getLeft(component) && typeof getLeft(component) === 'number') {
+      if (Number.isInteger(getLeft(component))) {
+        component.rawX = toX + getLeft(component)
       } else {
-        this.rawX = toX
+        component.rawX = toX + (getWidth(parent) - getWidth(component)) * getLeft(component)
+      }
+    } else if (getRight(component) && typeof getRight(component) === 'number') {
+      if (Number.isInteger(getRight(component))) {
+        component.rawX = toX + getWidth(parent) - getWidth(component) - getRight(component)
+      } else {
+        component.rawX = toX + (getWidth(parent) - getWidth(component)) * (1 - getRight(component))
       }
     } else {
-      if (this.left && typeof this.left === 'number') {
-        if (Number.isInteger(this.left)) {
-          this.rawX = toX + this.left
-        } else {
-          this.rawX = toX + this.width * this.left
-        }
-      } else if (this.right && typeof this.right === 'number') {
-        if (Number.isInteger(this.right)) {
-          this.rawX = toX - this.right
-        } else {
-          this.rawX = toX - this.width * this.right
-        }
-      } else {
-        this.rawX = toX
-      }
+      component.rawX = toX
     }
-  }
-
-  private moveY(toY: number, parent: SizeMeasurable) {
-    if (this.position === 'absolute') {
-      if (this.top && typeof this.top === 'number') {
-        if (Number.isInteger(this.top)) {
-          this.rawY = toY + this.top
-        } else {
-          this.rawY = toY + (parent.height - this.height) * this.top
-        }
-      } else if (this.bottom && typeof this.bottom === 'number') {
-        if (Number.isInteger(this.bottom)) {
-          this.rawY = toY + parent.height - this.height - this.bottom
-        } else {
-          this.rawY = toY + (parent.height - this.height) * (1 - this.bottom)
-        }
+  } else {
+    if (getLeft(component) && typeof getLeft(component) === 'number') {
+      if (Number.isInteger(getLeft(component))) {
+        component.rawX = toX + getLeft(component)
       } else {
-        this.rawY = toY
+        component.rawX = toX + getWidth(component) * getLeft(component)
+      }
+    } else if (getRight(component) && typeof getRight(component) === 'number') {
+      if (Number.isInteger(getRight(component))) {
+        component.rawX = toX - getRight(component)
+      } else {
+        component.rawX = toX - getWidth(component) * getRight(component)
       }
     } else {
-      if (this.top && typeof this.top === 'number') {
-        if (Number.isInteger(this.top)) {
-          this.rawY = toY + this.top
-        } else {
-          this.rawY = toY + this.height * this.top
-        }
-      } else if (this.bottom && typeof this.bottom === 'number') {
-        if (Number.isInteger(this.bottom)) {
-          this.rawY = toY - this.bottom
-        } else {
-          this.rawY = toY - this.height * this.bottom
-        }
+      component.rawX = toX
+    }
+  }
+}
+
+export function moveY(component: Component, toY: number, parent: Component | SizeMeasurable) {
+  if (getPosition(component) === 'absolute') {
+    if (getTop(component) && typeof getTop(component) === 'number') {
+      if (Number.isInteger(getTop(component))) {
+        component.rawY = toY + getTop(component)
       } else {
-        this.rawY = toY
+        component.rawY = toY + (getHeight(parent) - getHeight(component)) * getTop(component)
       }
+    } else if (getBottom(component) && typeof getBottom(component) === 'number') {
+      if (Number.isInteger(getBottom(component))) {
+        component.rawY = toY + getHeight(parent) - getHeight(component) - getBottom(component)
+      } else {
+        component.rawY = toY + (getHeight(parent) - getHeight(component)) * (1 - getBottom(component))
+      }
+    } else {
+      component.rawY = toY
+    }
+  } else {
+    if (getTop(component) && typeof getTop(component) === 'number') {
+      if (Number.isInteger(getTop(component))) {
+        component.rawY = toY + getTop(component)
+      } else {
+        component.rawY = toY + getHeight(component) * getTop(component)
+      }
+    } else if (getBottom(component) && typeof getBottom(component) === 'number') {
+      if (Number.isInteger(getBottom(component))) {
+        component.rawY = toY - getBottom(component)
+      } else {
+        component.rawY = toY - getHeight(component) * getBottom(component)
+      }
+    } else {
+      component.rawY = toY
     }
   }
 }

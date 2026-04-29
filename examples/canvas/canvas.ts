@@ -1,34 +1,23 @@
-import { Component, Container, Layouter, StyleProperties } from '../../src'
+import {
+  addComponent,
+  createComponent,
+  createContainer,
+  getHeight,
+  getVisible,
+  getWidth,
+  getX,
+  getY,
+  relayoutContainer,
+  type Component,
+  type Container,
+  type StyleProperties,
+} from '../../src'
+import type { Layoutable } from '../../src/layouter'
 
-class Box extends Component implements Container {
-  public components: Component[] = []
-  public readonly layouter = new Layouter()
-
-  constructor(id: string, style?: StyleProperties) {
-    super(id, style)
-  }
-
-  public addComponent(component: Component) {
-    this.components.push(component)
-  }
-
-  public find(id: string) {
-    return this.components.find((component) => component.id === id)
-  }
-
-  public resize(parent: Component | { width: number; height: number }) {
-    super.resize(parent)
-    this.layouter.resize(this, parent)
-  }
-
-  public move(ox: number, oy: number, parent: Component | { width: number; height: number }) {
-    super.move(ox, oy, parent)
-    this.layouter.move(this, ox, oy, parent)
-  }
-
-  public relayout(ox: number, oy: number, parent: { width: number; height: number }) {
-    this.resize(parent)
-    this.move(ox, oy, parent)
+function createBox(id: string, style?: StyleProperties): Layoutable {
+  return {
+    ...createComponent(id, style),
+    ...createContainer(),
   }
 }
 
@@ -48,7 +37,7 @@ class CanvasRenderer {
   }
 
   public render(component: Component) {
-    if (!component.visible) {
+    if (!getVisible(component)) {
       return
     }
     this.drawComponent(component)
@@ -58,11 +47,13 @@ class CanvasRenderer {
   }
 
   private drawComponent(component: Component) {
+    const x = getX(component) || 0
+    const y = getY(component) || 0
     this.ctx.strokeStyle = '#2b2b2b'
-    this.ctx.strokeRect(component.x, component.y, component.width, component.height)
+    this.ctx.strokeRect(x, y, getWidth(component), getHeight(component))
     this.ctx.fillStyle = '#2b2b2b'
     this.ctx.font = '12px sans-serif'
-    this.ctx.fillText(component.id, component.x + 4, component.y + 14)
+    this.ctx.fillText(component.id, x + 4, y + 14)
   }
 }
 
@@ -85,20 +76,20 @@ if (!ctx) {
   throw new Error('CanvasRenderingContext2D is not available')
 }
 
-const root = new Box('root', {
+const root = createBox('root', {
   layout: 'flow',
   width: canvas.width,
   height: canvas.height,
   padding: [12],
 })
 
-root.addComponent(new Component('title', { width: 200, height: 24 }))
-root.addComponent(new Component('badge', { width: 72, height: 20, margin: [0, 0, 0, 8] }))
-root.addComponent(new Component('break', { width: 1, height: 1, breakAfter: true }))
-root.addComponent(new Component('body', { width: 400, height: 90 }))
-root.addComponent(new Component('aside', { width: 160, height: 90, margin: [0, 0, 0, 12] }))
+addComponent(root, createComponent('title', { width: 200, height: 24 }))
+addComponent(root, createComponent('badge', { width: 72, height: 20, margin: [0, 0, 0, 8] }))
+addComponent(root, createComponent('break', { width: 1, height: 1, breakAfter: true }))
+addComponent(root, createComponent('body', { width: 400, height: 90 }))
+addComponent(root, createComponent('aside', { width: 160, height: 90, margin: [0, 0, 0, 12] }))
 
-root.relayout(0, 0, { width: canvas.width, height: canvas.height })
+relayoutContainer(root, 0, 0, { width: canvas.width, height: canvas.height })
 
 const renderer = new CanvasRenderer(ctx)
 renderer.clear()
