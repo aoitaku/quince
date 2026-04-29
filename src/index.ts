@@ -19,7 +19,11 @@ export {
   arrangeFlowSequence,
   arrangeHorizontalBoxSequence,
   arrangeVerticalBoxSequence,
+  measureFlowSequence,
+  measureHorizontalBoxSequence,
+  measureVerticalBoxSequence,
 } from './sequence'
 export type {
   ArrangePatch,
+  MeasurePatch,
 } from './sequence'

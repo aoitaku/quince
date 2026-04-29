@@ -1,21 +1,7 @@
 import {
   type Component,
   type SizeMeasurable,
-  getBreakAfter,
-  getHeight,
   getLayout,
-  getLayoutHeight,
-  getLayoutWidth,
-  getMarginBottom,
-  getMarginLeft,
-  getMarginRight,
-  getMarginTop,
-  getPaddingBottom,
-  getPaddingLeft,
-  getPaddingRight,
-  getPaddingTop,
-  getPosition,
-  getWidth,
   move,
   resize,
 } from './component'
@@ -25,27 +11,13 @@ import {
   arrangeHorizontalBoxSequence,
   arrangeVerticalBoxSequence,
   type ArrangePatch,
+  measureFlowSequence,
+  measureHorizontalBoxSequence,
+  measureVerticalBoxSequence,
+  type MeasurePatch,
 } from './sequence'
 
 export type Layoutable = Component & Container
-
-const chunkBy = <T>(array: T[], predicate: (element: T) => boolean): T[][] =>
-  array.reduce((prev, current) => {
-    const shouldBreak = predicate(current)
-    if (prev.length === 0 || shouldBreak) {
-      prev.push([current])
-    } else {
-      prev[prev.length - 1].push(current)
-    }
-    return prev
-  }, [] as T[][])
-
-const maxBy = <T>(array: T[], selector: (item: T) => number): T | undefined => {
-  if (array.length === 0) {
-    return undefined
-  }
-  return array.reduce((best, current) => (selector(current) > selector(best) ? current : best))
-}
 
 function hasComponents(component: Component): component is Layoutable {
   return 'components' in component && Array.isArray(component.components)
@@ -56,10 +28,6 @@ function resizeLayoutChild(child: Component, parent: Component) {
   if (hasComponents(child)) {
     resizeContainer(child, parent)
   }
-}
-
-function getContentWidth(component: Component) {
-  return component.contentWidth || 0
 }
 
 function applyArrangePatches(component: Layoutable, patches: ArrangePatch[]) {
@@ -73,34 +41,12 @@ function applyArrangePatches(component: Layoutable, patches: ArrangePatch[]) {
   })
 }
 
-function testIfComponentsOverflow(component: Component) {
-  let horizontalMargin = getPaddingLeft(component)
-  let width = 0
-  const maxWidth = getContentWidth(component)
-  let forceBreak = false
-  return (child: Component) => {
-    if (getPosition(child) === 'absolute') {
-      return false
-    }
-    const horizontalSpace = Math.max(horizontalMargin, getMarginLeft(child)) + getWidth(child)
-    if (forceBreak) {
-      forceBreak = getBreakAfter(child)
-      width = horizontalSpace
-      horizontalMargin = getPaddingLeft(component)
-      return true
-    } else {
-      forceBreak = getBreakAfter(child)
-    }
-    const expectedWidth = width + getLayoutWidth(child) + getPaddingLeft(component) + getPaddingRight(component)
-    if (width > 0 && expectedWidth > maxWidth) {
-      width = horizontalSpace
-      horizontalMargin = getPaddingLeft(component)
-      return true
-    } else {
-      width += horizontalSpace
-      horizontalMargin = getMarginRight(child)
-      return false
-    }
+function applyMeasurePatch(component: Layoutable, patch: MeasurePatch) {
+  if (patch.contentWidth !== undefined) {
+    component.contentWidth = patch.contentWidth
+  }
+  if (patch.contentHeight !== undefined) {
+    component.contentHeight = patch.contentHeight
   }
 }
 
@@ -144,22 +90,10 @@ export function relayoutContainer(component: Layoutable, ox: number = 0, oy: num
 }
 
 function resizeComponentsForFlowLayout(component: Layoutable, _parent: Component | SizeMeasurable) {
-  let verticalMargin = getPaddingTop(component)
-  component.contentWidth = component.rawWidth
   component.components.forEach((child) => {
     resizeLayoutChild(child, component)
   })
-  component.contentHeight = chunkBy(component.components, testIfComponentsOverflow(component))
-    .filter((row) => row.length > 0)
-    .reduce((height: number, row: Component[]) => {
-      const child = maxBy(row, (col) => getLayoutHeight(col))!
-      if (getPosition(child) === 'absolute') {
-        return height
-      }
-      const verticalSpace = Math.max(verticalMargin, getMarginTop(child)) + height
-      verticalMargin = getMarginBottom(child)
-      return verticalSpace + getHeight(child)
-    }, 0) + Math.max(verticalMargin, getPaddingBottom(component))
+  applyMeasurePatch(component, measureFlowSequence(component.components, component))
 }
 
 function moveComponentsForFlowLayout(
@@ -168,26 +102,14 @@ function moveComponentsForFlowLayout(
   _oy: number = 0,
   _parent: Component | SizeMeasurable,
 ) {
-  applyArrangePatches(component, arrangeFlowSequence(component, component.components))
+  applyArrangePatches(component, arrangeFlowSequence(component.components, component))
 }
 
 function resizeComponentsForVerticalBox(component: Layoutable, _parent: Component | SizeMeasurable) {
-  let verticalMargin = getPaddingTop(component)
-  component.contentHeight = component.components.reduce((height: number, child: Component) => {
-    const verticalSpace = Math.max(verticalMargin, getMarginTop(child)) + height
+  component.components.forEach((child) => {
     resizeLayoutChild(child, component)
-    if (getPosition(child) === 'absolute') {
-      return height
-    }
-    verticalMargin = getMarginBottom(child)
-    return verticalSpace + getHeight(child)
-  }, 0) + Math.max(verticalMargin, getPaddingBottom(component))
-  const widestComponent = maxBy(component.components, (child) => getLayoutWidth(child))
-  if (widestComponent) {
-    component.contentWidth = getWidth(widestComponent) +
-      Math.max(getMarginLeft(widestComponent), getPaddingLeft(component)) +
-      Math.max(getMarginRight(widestComponent), getPaddingRight(component))
-  }
+  })
+  applyMeasurePatch(component, measureVerticalBoxSequence(component.components, component))
 }
 
 function moveComponentsForVerticalBox(
@@ -196,26 +118,14 @@ function moveComponentsForVerticalBox(
   _oy: number = 0,
   _parent: Component | SizeMeasurable,
 ) {
-  applyArrangePatches(component, arrangeVerticalBoxSequence(component, component.components))
+  applyArrangePatches(component, arrangeVerticalBoxSequence(component.components, component))
 }
 
 function resizeComponentsForHorizontalBox(component: Layoutable, _parent: Component | SizeMeasurable) {
-  let horizontalMargin = getPaddingLeft(component)
-  component.contentWidth = component.components.reduce((width: number, child: Component) => {
+  component.components.forEach((child) => {
     resizeLayoutChild(child, component)
-    if (getPosition(child) === 'absolute') {
-      return width
-    }
-    const horizontalSpace = Math.max(horizontalMargin, getMarginLeft(child)) + width
-    horizontalMargin = getMarginRight(child)
-    return horizontalSpace + getWidth(child)
-  }, 0) + Math.max(horizontalMargin, getPaddingRight(component))
-  const tallestComponent = maxBy(component.components, (child: Component) => getLayoutHeight(child))
-  if (tallestComponent) {
-    component.contentHeight = getHeight(tallestComponent) +
-      Math.max(getMarginTop(tallestComponent), getPaddingTop(component)) +
-      Math.max(getMarginBottom(tallestComponent), getPaddingBottom(component))
-  }
+  })
+  applyMeasurePatch(component, measureHorizontalBoxSequence(component.components, component))
 }
 
 function moveComponentsForHorizontalBox(
@@ -224,5 +134,5 @@ function moveComponentsForHorizontalBox(
   _oy: number = 0,
   _parent: Component | SizeMeasurable,
 ) {
-  applyArrangePatches(component, arrangeHorizontalBoxSequence(component, component.components))
+  applyArrangePatches(component, arrangeHorizontalBoxSequence(component.components, component))
 }

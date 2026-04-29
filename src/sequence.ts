@@ -30,6 +30,18 @@ export type ArrangePatch = {
   y: number
 }
 
+export type MeasurePatch = {
+  id: string
+  contentWidth?: number
+  contentHeight?: number
+}
+
+type FlowOverflowContext = {
+  contentWidth: number
+  paddingLeft: number
+  paddingRight: number
+}
+
 const maxBy = <T>(array: T[], selector: (item: T) => number): T | undefined => {
   if (array.length === 0) {
     return undefined
@@ -130,10 +142,18 @@ function placeComponent(component: Component, x: number, y: number, parent: Comp
   }
 }
 
-function testIfComponentsOverflow(parent: Component) {
-  let horizontalMargin = getPaddingLeft(parent)
+function createFlowOverflowContext(contentWidth: number, parent: Component): FlowOverflowContext {
+  return {
+    contentWidth,
+    paddingLeft: getPaddingLeft(parent),
+    paddingRight: getPaddingRight(parent),
+  }
+}
+
+function testIfComponentsOverflow(context: FlowOverflowContext) {
+  let horizontalMargin = context.paddingLeft
   let width = 0
-  const maxWidth = getContentWidth(parent)
+  const maxWidth = context.contentWidth
   let forceBreak = false
   return (component: Component) => {
     if (getPosition(component) === 'absolute') {
@@ -143,15 +163,15 @@ function testIfComponentsOverflow(parent: Component) {
     if (forceBreak) {
       forceBreak = getBreakAfter(component)
       width = horizontalSpace
-      horizontalMargin = getPaddingLeft(parent)
+      horizontalMargin = context.paddingLeft
       return true
     } else {
       forceBreak = getBreakAfter(component)
     }
-    const expectedWidth = width + getLayoutWidth(component) + getPaddingLeft(parent) + getPaddingRight(parent)
+    const expectedWidth = width + getLayoutWidth(component) + context.paddingLeft + context.paddingRight
     if (width > 0 && expectedWidth > maxWidth) {
       width = horizontalSpace
-      horizontalMargin = getPaddingLeft(parent)
+      horizontalMargin = context.paddingLeft
       return true
     } else {
       width += horizontalSpace
@@ -161,7 +181,10 @@ function testIfComponentsOverflow(parent: Component) {
   }
 }
 
-function evaluateRowWidth(parent: Component, withExtraCalculation?: (component: Component, horizontalSpace: number) => number) {
+function evaluateRowWidth(
+  withExtraCalculation: ((component: Component, horizontalSpace: number) => number) | undefined,
+  parent: Component,
+) {
   let horizontalMargin = getPaddingLeft(parent)
   return (width: number, component: Component) => {
     let horizontalSpace = Math.max(horizontalMargin, getMarginLeft(component)) + width
@@ -176,11 +199,11 @@ function evaluateRowWidth(parent: Component, withExtraCalculation?: (component: 
   }
 }
 
-export function arrangeFlowSequence(parent: Component, components: Component[]): ArrangePatch[] {
+export function arrangeFlowSequence(components: Component[], parent: Component): ArrangePatch[] {
   const patches: ArrangePatch[] = []
   let verticalMargin = getPaddingTop(parent)
 
-  chunkBy(components, testIfComponentsOverflow(parent))
+  chunkBy(components, testIfComponentsOverflow(createFlowOverflowContext(getContentWidth(parent), parent)))
     .filter((row) => row.length > 0)
     .reduce((height: number, row: Component[]) => {
       const tallestComponent = maxBy(row, (col) => getLayoutHeight(col))!
@@ -188,8 +211,8 @@ export function arrangeFlowSequence(parent: Component, components: Component[]):
       const verticalSpace = Math.max(verticalMargin, getMarginTop(tallestComponent)) + height
       verticalMargin = getMarginBottom(tallestComponent)
       const rowLast = last(row)!
-      const innerWidth = row.reduce(evaluateRowWidth(parent), 0) + Math.max(getMarginRight(rowLast), getPaddingRight(parent))
-      row.reduce(evaluateRowWidth(parent, (component, horizontalSpace) => {
+      const innerWidth = row.reduce(evaluateRowWidth(undefined, parent), 0) + Math.max(getMarginRight(rowLast), getPaddingRight(parent))
+      row.reduce(evaluateRowWidth((component, horizontalSpace) => {
         let x = getOriginX(parent) + horizontalSpace
         switch (getJustifyContent(parent)) {
           case 'spaceBetween':
@@ -217,14 +240,36 @@ export function arrangeFlowSequence(parent: Component, components: Component[]):
           ? placeComponent(component, getOriginX(parent), getOriginY(parent), parent)
           : placeComponent(component, x, y, parent))
         return horizontalSpace
-      }), 0)
+      }, parent), 0)
       return verticalSpace + maxComponentHeight
     }, 0)
 
   return patches
 }
 
-export function arrangeVerticalBoxSequence(parent: Component, components: Component[]): ArrangePatch[] {
+export function measureFlowSequence(components: Component[], parent: Component): MeasurePatch {
+  let verticalMargin = getPaddingTop(parent)
+  const contentWidth = parent.rawWidth || 0
+  const contentHeight = chunkBy(components, testIfComponentsOverflow(createFlowOverflowContext(contentWidth, parent)))
+    .filter((row) => row.length > 0)
+    .reduce((height: number, row: Component[]) => {
+      const component = maxBy(row, (col) => getLayoutHeight(col))!
+      if (getPosition(component) === 'absolute') {
+        return height
+      }
+      const verticalSpace = Math.max(verticalMargin, getMarginTop(component)) + height
+      verticalMargin = getMarginBottom(component)
+      return verticalSpace + getHeight(component)
+    }, 0) + Math.max(verticalMargin, getPaddingBottom(parent))
+
+  return {
+    id: parent.id,
+    contentWidth,
+    contentHeight,
+  }
+}
+
+export function arrangeVerticalBoxSequence(components: Component[], parent: Component): ArrangePatch[] {
   const patches: ArrangePatch[] = []
   let verticalMargin = getPaddingTop(parent)
 
@@ -267,7 +312,32 @@ export function arrangeVerticalBoxSequence(parent: Component, components: Compon
   return patches
 }
 
-export function arrangeHorizontalBoxSequence(parent: Component, components: Component[]): ArrangePatch[] {
+export function measureVerticalBoxSequence(components: Component[], parent: Component): MeasurePatch {
+  let verticalMargin = getPaddingTop(parent)
+  const contentHeight = components.reduce((height: number, component: Component) => {
+    const verticalSpace = Math.max(verticalMargin, getMarginTop(component)) + height
+    if (getPosition(component) === 'absolute') {
+      return height
+    }
+    verticalMargin = getMarginBottom(component)
+    return verticalSpace + getHeight(component)
+  }, 0) + Math.max(verticalMargin, getPaddingBottom(parent))
+  const widestComponent = maxBy(components, (component) => getLayoutWidth(component))
+
+  return {
+    id: parent.id,
+    contentHeight,
+    ...(widestComponent
+      ? {
+          contentWidth: getWidth(widestComponent) +
+            Math.max(getMarginLeft(widestComponent), getPaddingLeft(parent)) +
+            Math.max(getMarginRight(widestComponent), getPaddingRight(parent)),
+        }
+      : {}),
+  }
+}
+
+export function arrangeHorizontalBoxSequence(components: Component[], parent: Component): ArrangePatch[] {
   const patches: ArrangePatch[] = []
   let horizontalMargin = getPaddingLeft(parent)
 
@@ -308,4 +378,29 @@ export function arrangeHorizontalBoxSequence(parent: Component, components: Comp
   }, 0)
 
   return patches
+}
+
+export function measureHorizontalBoxSequence(components: Component[], parent: Component): MeasurePatch {
+  let horizontalMargin = getPaddingLeft(parent)
+  const contentWidth = components.reduce((width: number, component: Component) => {
+    if (getPosition(component) === 'absolute') {
+      return width
+    }
+    const horizontalSpace = Math.max(horizontalMargin, getMarginLeft(component)) + width
+    horizontalMargin = getMarginRight(component)
+    return horizontalSpace + getWidth(component)
+  }, 0) + Math.max(horizontalMargin, getPaddingRight(parent))
+  const tallestComponent = maxBy(components, (component: Component) => getLayoutHeight(component))
+
+  return {
+    id: parent.id,
+    contentWidth,
+    ...(tallestComponent
+      ? {
+          contentHeight: getHeight(tallestComponent) +
+            Math.max(getMarginTop(tallestComponent), getPaddingTop(parent)) +
+            Math.max(getMarginBottom(tallestComponent), getPaddingBottom(parent)),
+        }
+      : {}),
+  }
 }
