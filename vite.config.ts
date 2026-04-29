@@ -11,7 +11,6 @@ export default defineConfig({
       fileName: (format) => (format === 'es' ? 'index.js' : 'index.cjs'),
     },
     rollupOptions: {
-      external: ['lodash'],
       output: {
         exports: 'named',
       },

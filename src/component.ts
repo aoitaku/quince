@@ -197,7 +197,7 @@ export function getOffsetRight(component: Component, parent: Component) {
 }
 
 export function getHorizontalOffset(component: Component, parent: Component) {
-  return getOffsetLeft(component, parent) + getOffsetLeft(component, parent)
+  return getOffsetLeft(component, parent) + getOffsetRight(component, parent)
 }
 
 export function getVerticalMargin(component: Component) {
@@ -230,19 +230,24 @@ export function getInnerHeight(component: Component, parent: Component | HeightM
   return getHeight(parent) - getVerticalMargin(component)
 }
 
-export function testIfComponent(obj: unknown): obj is Component {
-  return typeof obj === 'object'
-    && obj != null
-    && Object.hasOwn(obj, 'id')
-    && Object.hasOwn(obj, 'rawX')
-    && Object.hasOwn(obj, 'rawY')
-    && Object.hasOwn(obj, 'rawWidth')
-    && Object.hasOwn(obj, 'rawHeight')
-    && Object.hasOwn(obj, 'contentWidth')
-    && Object.hasOwn(obj, 'contentHeight')
-    && Object.hasOwn(obj, 'style')
+export function testIfComponent(
+  obj: Component | WidthMeasurable | HeightMeasurable | SizeMeasurable,
+): obj is Component {
+  return 'id' in obj
 }
 
+/**
+ * 子を持たない単一 Component の resize + move を一括実行する。
+ *
+ * 内部では {@link resize} の結果を {@link applyResize}、{@link move} の結果を
+ * {@link applyMove} に渡し、自身の rawWidth/rawHeight/rawX/rawY を確定する。
+ * Container を含むツリーには `relayoutContainer` を使う。
+ *
+ * @param component 再レイアウト対象。
+ * @param ox 親原点に対する追加 X オフセット (既定 0)。
+ * @param oy 親原点に対する追加 Y オフセット (既定 0)。
+ * @param parent サイズ・位置算出の基準となる親または `SizeMeasurable`。
+ */
 export function relayout(component: Component, ox: number = 0, oy: number = 0, parent: Component | SizeMeasurable) {
   applyResize(component, resize(component, parent))
   applyMove(component, move(component, ox, oy, parent))

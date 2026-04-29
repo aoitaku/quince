@@ -1,6 +1,7 @@
-import { Component } from './component';
-export interface Container {
+import type { Component } from './component';
+export type Container = {
     components: Component[];
-    addComponent(component: Component): void;
-    find(id: string): Component | undefined;
-}
+};
+export declare function createContainer(components?: Component[]): Container;
+export declare function addComponent(container: Container, component: Component): void;
+export declare function findComponent(container: Container, id: string): Component | undefined;
