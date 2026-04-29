@@ -1,6 +1,8 @@
 export { createStyle, normalizeBoxSpacing, setMargin, setPadding } from './style'
 export type { Style, StyleProperties } from './style'
 export {
+  applyMove,
+  applyResize,
   createComponent,
   getVisible,
   getHeight,
@@ -10,7 +12,7 @@ export {
   move,
   resize,
 } from './component'
-export type { Component, SizeMeasurable } from './component'
+export type { Component, MovePatch, ResizePatch, SizeMeasurable } from './component'
 export { addComponent, createContainer, findComponent } from './container'
 export type { Container } from './container'
 export { moveContainer, relayoutContainer, resizeContainer } from './layouter'

@@ -33,6 +33,16 @@ export type Component = {
   style: Style
 }
 
+export type MovePatch = {
+  x: number
+  y: number
+}
+
+export type ResizePatch = {
+  width: number
+  height: number
+}
+
 export function createComponent(id: string, style?: StyleProperties): Component {
   return {
     id,
@@ -234,104 +244,126 @@ export function testIfComponent(obj: unknown): obj is Component {
 }
 
 export function relayout(component: Component, ox: number = 0, oy: number = 0, parent: Component | SizeMeasurable) {
-  resize(component, parent)
-  move(component, ox, oy, parent)
+  applyResize(component, resize(component, parent))
+  applyMove(component, move(component, ox, oy, parent))
 }
 
-export function move(component: Component, toX: number, toY: number, parent: Component | SizeMeasurable) {
-  moveX(component, toX, parent)
-  moveY(component, toY, parent)
+export function move(component: Component, toX: number, toY: number, parent: Component | SizeMeasurable): MovePatch {
+  return {
+    x: calculateMoveX(component, toX, parent),
+    y: calculateMoveY(component, toY, parent),
+  }
 }
 
-export function resize(component: Component, parent: Component | SizeMeasurable) {
+export function resize(component: Component, parent: Component | SizeMeasurable): ResizePatch {
+  return {
+    width: calculateResizeWidth(component, parent),
+    height: calculateResizeHeight(component, parent),
+  }
+}
+
+export function applyMove(component: Component, patch: MovePatch) {
+  component.rawX = patch.x
+  component.rawY = patch.y
+}
+
+export function applyResize(component: Component, patch: ResizePatch) {
+  component.rawWidth = patch.width
+  component.rawHeight = patch.height
+}
+
+export function calculateResizeWidth(component: Component, parent: Component | SizeMeasurable) {
   if (component.style.width === 'full') {
-    component.rawWidth = getInnerWidth(component, parent)
+    return getInnerWidth(component, parent)
   } else if (!testIfComponent(parent) || getHorizontalItemArrangement(parent) === 'real') {
-    component.rawWidth = (component.style.width || 0)
+    return component.style.width || 0
   } else if (getHorizontalItemArrangement(parent) === 'ratio') {
-    component.rawWidth = (component.style.width || 0) * getWidth(parent)
+    return (component.style.width || 0) * getWidth(parent)
   } else {
-    component.rawWidth = 0
+    return 0
   }
+}
+
+export function calculateResizeHeight(component: Component, parent: Component | SizeMeasurable) {
   if (component.style.height === 'full') {
-    component.rawHeight = getInnerHeight(component, parent)
+    return getInnerHeight(component, parent)
   } else if (!testIfComponent(parent) || getVerticalItemArrangement(parent) === 'real') {
-    component.rawHeight = (component.style.height || 0)
+    return component.style.height || 0
   } else if (getVerticalItemArrangement(parent) === 'ratio') {
-    component.rawHeight = (component.style.height || 0) * getHeight(parent)
+    return (component.style.height || 0) * getHeight(parent)
   } else {
-    component.rawHeight = 0
+    return 0
   }
 }
 
-export function moveX(component: Component, toX: number, parent: Component | SizeMeasurable) {
+export function calculateMoveX(component: Component, toX: number, parent: Component | SizeMeasurable) {
   if (getPosition(component) === 'absolute') {
     if (getLeft(component) && typeof getLeft(component) === 'number') {
       if (Number.isInteger(getLeft(component))) {
-        component.rawX = toX + getLeft(component)
+        return toX + getLeft(component)
       } else {
-        component.rawX = toX + (getWidth(parent) - getWidth(component)) * getLeft(component)
+        return toX + (getWidth(parent) - getWidth(component)) * getLeft(component)
       }
     } else if (getRight(component) && typeof getRight(component) === 'number') {
       if (Number.isInteger(getRight(component))) {
-        component.rawX = toX + getWidth(parent) - getWidth(component) - getRight(component)
+        return toX + getWidth(parent) - getWidth(component) - getRight(component)
       } else {
-        component.rawX = toX + (getWidth(parent) - getWidth(component)) * (1 - getRight(component))
+        return toX + (getWidth(parent) - getWidth(component)) * (1 - getRight(component))
       }
     } else {
-      component.rawX = toX
+      return toX
     }
   } else {
     if (getLeft(component) && typeof getLeft(component) === 'number') {
       if (Number.isInteger(getLeft(component))) {
-        component.rawX = toX + getLeft(component)
+        return toX + getLeft(component)
       } else {
-        component.rawX = toX + getWidth(component) * getLeft(component)
+        return toX + getWidth(component) * getLeft(component)
       }
     } else if (getRight(component) && typeof getRight(component) === 'number') {
       if (Number.isInteger(getRight(component))) {
-        component.rawX = toX - getRight(component)
+        return toX - getRight(component)
       } else {
-        component.rawX = toX - getWidth(component) * getRight(component)
+        return toX - getWidth(component) * getRight(component)
       }
     } else {
-      component.rawX = toX
+      return toX
     }
   }
 }
 
-export function moveY(component: Component, toY: number, parent: Component | SizeMeasurable) {
+export function calculateMoveY(component: Component, toY: number, parent: Component | SizeMeasurable) {
   if (getPosition(component) === 'absolute') {
     if (getTop(component) && typeof getTop(component) === 'number') {
       if (Number.isInteger(getTop(component))) {
-        component.rawY = toY + getTop(component)
+        return toY + getTop(component)
       } else {
-        component.rawY = toY + (getHeight(parent) - getHeight(component)) * getTop(component)
+        return toY + (getHeight(parent) - getHeight(component)) * getTop(component)
       }
     } else if (getBottom(component) && typeof getBottom(component) === 'number') {
       if (Number.isInteger(getBottom(component))) {
-        component.rawY = toY + getHeight(parent) - getHeight(component) - getBottom(component)
+        return toY + getHeight(parent) - getHeight(component) - getBottom(component)
       } else {
-        component.rawY = toY + (getHeight(parent) - getHeight(component)) * (1 - getBottom(component))
+        return toY + (getHeight(parent) - getHeight(component)) * (1 - getBottom(component))
       }
     } else {
-      component.rawY = toY
+      return toY
     }
   } else {
     if (getTop(component) && typeof getTop(component) === 'number') {
       if (Number.isInteger(getTop(component))) {
-        component.rawY = toY + getTop(component)
+        return toY + getTop(component)
       } else {
-        component.rawY = toY + getHeight(component) * getTop(component)
+        return toY + getHeight(component) * getTop(component)
       }
     } else if (getBottom(component) && typeof getBottom(component) === 'number') {
       if (Number.isInteger(getBottom(component))) {
-        component.rawY = toY - getBottom(component)
+        return toY - getBottom(component)
       } else {
-        component.rawY = toY - getHeight(component) * getBottom(component)
+        return toY - getHeight(component) * getBottom(component)
       }
     } else {
-      component.rawY = toY
+      return toY
     }
   }
 }

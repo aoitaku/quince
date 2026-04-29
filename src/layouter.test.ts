@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
   addComponent,
+  applyMove,
+  applyResize,
   createComponent,
   createContainer,
   getHeight,
@@ -199,10 +201,10 @@ describe('Layouter edge cases', () => {
       verticalItemArrangement: 'ratio',
     })
 
-    resize(parent, { width: 200, height: 100 })
+    applyResize(parent, resize(parent, { width: 200, height: 100 }))
 
     const child = createComponent('child', { width: 0.5, height: 0.25 })
-    resize(child, parent)
+    applyResize(child, resize(child, parent))
 
     expect(snapshotComponent(child)).toEqual({
       id: 'child',
@@ -219,8 +221,8 @@ describe('Layouter edge cases', () => {
       height: 100,
     })
 
-    resize(parent, { width: 200, height: 100 })
-    move(parent, 10, 20, { width: 200, height: 100 })
+    applyResize(parent, resize(parent, { width: 200, height: 100 }))
+    applyMove(parent, move(parent, 10, 20, { width: 200, height: 100 }))
 
     const child = createComponent('child', {
       width: 40,
@@ -230,8 +232,8 @@ describe('Layouter edge cases', () => {
       top: 0.5,
     })
 
-    resize(child, parent)
-    move(child, getX(parent) || 0, getY(parent) || 0, parent)
+    applyResize(child, resize(child, parent))
+    applyMove(child, move(child, getX(parent) || 0, getY(parent) || 0, parent))
 
     expect(snapshotComponent(child)).toEqual({
       id: 'child',

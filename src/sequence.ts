@@ -1,13 +1,13 @@
 import {
+  calculateMoveX,
+  calculateMoveY,
   type Component,
   getAlignItems,
   getBreakAfter,
-  getBottom,
   getHeight,
   getJustifyContent,
   getLayoutHeight,
   getLayoutWidth,
-  getLeft,
   getMarginBottom,
   getMarginLeft,
   getMarginRight,
@@ -17,8 +17,6 @@ import {
   getPaddingRight,
   getPaddingTop,
   getPosition,
-  getRight,
-  getTop,
   getWidth,
   getX,
   getY,
@@ -78,67 +76,11 @@ function getContentHeight(component: Component) {
   return component.contentHeight || 0
 }
 
-function moveX(component: Component, toX: number, parent: Component) {
-  if (getPosition(component) === 'absolute') {
-    if (getLeft(component) && typeof getLeft(component) === 'number') {
-      return Number.isInteger(getLeft(component))
-        ? toX + getLeft(component)
-        : toX + (getWidth(parent) - getWidth(component)) * getLeft(component)
-    }
-    if (getRight(component) && typeof getRight(component) === 'number') {
-      return Number.isInteger(getRight(component))
-        ? toX + getWidth(parent) - getWidth(component) - getRight(component)
-        : toX + (getWidth(parent) - getWidth(component)) * (1 - getRight(component))
-    }
-    return toX
-  }
-
-  if (getLeft(component) && typeof getLeft(component) === 'number') {
-    return Number.isInteger(getLeft(component))
-      ? toX + getLeft(component)
-      : toX + getWidth(component) * getLeft(component)
-  }
-  if (getRight(component) && typeof getRight(component) === 'number') {
-    return Number.isInteger(getRight(component))
-      ? toX - getRight(component)
-      : toX - getWidth(component) * getRight(component)
-  }
-  return toX
-}
-
-function moveY(component: Component, toY: number, parent: Component) {
-  if (getPosition(component) === 'absolute') {
-    if (getTop(component) && typeof getTop(component) === 'number') {
-      return Number.isInteger(getTop(component))
-        ? toY + getTop(component)
-        : toY + (getHeight(parent) - getHeight(component)) * getTop(component)
-    }
-    if (getBottom(component) && typeof getBottom(component) === 'number') {
-      return Number.isInteger(getBottom(component))
-        ? toY + getHeight(parent) - getHeight(component) - getBottom(component)
-        : toY + (getHeight(parent) - getHeight(component)) * (1 - getBottom(component))
-    }
-    return toY
-  }
-
-  if (getTop(component) && typeof getTop(component) === 'number') {
-    return Number.isInteger(getTop(component))
-      ? toY + getTop(component)
-      : toY + getHeight(component) * getTop(component)
-  }
-  if (getBottom(component) && typeof getBottom(component) === 'number') {
-    return Number.isInteger(getBottom(component))
-      ? toY - getBottom(component)
-      : toY - getHeight(component) * getBottom(component)
-  }
-  return toY
-}
-
 function placeComponent(component: Component, x: number, y: number, parent: Component): ArrangePatch {
   return {
     id: component.id,
-    x: moveX(component, x, parent),
-    y: moveY(component, y, parent),
+    x: calculateMoveX(component, x, parent),
+    y: calculateMoveY(component, y, parent),
   }
 }
 

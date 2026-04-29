@@ -1,6 +1,8 @@
 import {
   type Component,
   type SizeMeasurable,
+  applyMove,
+  applyResize,
   getLayout,
   move,
   resize,
@@ -24,7 +26,7 @@ function hasComponents(component: Component): component is Layoutable {
 }
 
 function resizeLayoutChild(child: Component, parent: Component) {
-  resize(child, parent)
+  applyResize(child, resize(child, parent))
   if (hasComponents(child)) {
     resizeContainer(child, parent)
   }
@@ -33,8 +35,7 @@ function resizeLayoutChild(child: Component, parent: Component) {
 function applyArrangePatches(component: Layoutable, patches: ArrangePatch[]) {
   component.components.forEach((child, index) => {
     const patch = patches[index]
-    child.rawX = patch.x
-    child.rawY = patch.y
+    applyMove(child, patch)
     if (hasComponents(child)) {
       moveContainer(child, patch.x, patch.y, component)
     }
@@ -83,9 +84,9 @@ export function moveContainer(component: Layoutable, ox: number = 0, oy: number 
 }
 
 export function relayoutContainer(component: Layoutable, ox: number = 0, oy: number = 0, parent: Component | SizeMeasurable) {
-  resize(component, parent)
+  applyResize(component, resize(component, parent))
   resizeContainer(component, parent)
-  move(component, ox, oy, parent)
+  applyMove(component, move(component, ox, oy, parent))
   moveContainer(component, ox, oy, parent)
 }
 
