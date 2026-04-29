@@ -1,12 +1,8 @@
 import {
   type Component,
   type SizeMeasurable,
-  getAlignItems,
   getBreakAfter,
   getHeight,
-  getInnerHeight,
-  getInnerWidth,
-  getJustifyContent,
   getLayout,
   getLayoutHeight,
   getLayoutWidth,
@@ -20,12 +16,16 @@ import {
   getPaddingTop,
   getPosition,
   getWidth,
-  getX,
-  getY,
   move,
   resize,
 } from './component'
 import type { Container } from './container'
+import {
+  arrangeFlowSequence,
+  arrangeHorizontalBoxSequence,
+  arrangeVerticalBoxSequence,
+  type ArrangePatch,
+} from './sequence'
 
 export type Layoutable = Component & Container
 
@@ -47,8 +47,6 @@ const maxBy = <T>(array: T[], selector: (item: T) => number): T | undefined => {
   return array.reduce((best, current) => (selector(current) > selector(best) ? current : best))
 }
 
-const last = <T>(array: T[]): T | undefined => array[array.length - 1]
-
 function hasComponents(component: Component): component is Layoutable {
   return 'components' in component && Array.isArray(component.components)
 }
@@ -60,27 +58,19 @@ function resizeLayoutChild(child: Component, parent: Component) {
   }
 }
 
-function moveLayoutChild(child: Component, x: number, y: number, parent: Component) {
-  move(child, x, y, parent)
-  if (hasComponents(child)) {
-    moveContainer(child, x, y, parent)
-  }
-}
-
-function getLayoutX(component: Component) {
-  return getX(component) || 0
-}
-
-function getLayoutY(component: Component) {
-  return getY(component) || 0
-}
-
 function getContentWidth(component: Component) {
   return component.contentWidth || 0
 }
 
-function getContentHeight(component: Component) {
-  return component.contentHeight || 0
+function applyArrangePatches(component: Layoutable, patches: ArrangePatch[]) {
+  component.components.forEach((child, index) => {
+    const patch = patches[index]
+    child.rawX = patch.x
+    child.rawY = patch.y
+    if (hasComponents(child)) {
+      moveContainer(child, patch.x, patch.y, component)
+    }
+  })
 }
 
 function testIfComponentsOverflow(component: Component) {
@@ -111,21 +101,6 @@ function testIfComponentsOverflow(component: Component) {
       horizontalMargin = getMarginRight(child)
       return false
     }
-  }
-}
-
-function evaluateRowWidth(component: Component, withExtraCalcuration?: (child: Component, horizontalSpace: number) => number) {
-  let horizontalMargin = getPaddingLeft(component)
-  return (width: number, child: Component) => {
-    let horizontalSpace = Math.max(horizontalMargin, getMarginLeft(child)) + width
-    if (withExtraCalcuration) {
-      horizontalSpace = withExtraCalcuration(child, horizontalSpace)
-    }
-    if (getPosition(child) === 'absolute') {
-      return width
-    }
-    horizontalMargin = getMarginRight(child)
-    return horizontalSpace + getWidth(child)
   }
 }
 
@@ -193,49 +168,7 @@ function moveComponentsForFlowLayout(
   _oy: number = 0,
   _parent: Component | SizeMeasurable,
 ) {
-  let verticalMargin = getPaddingTop(component)
-  return chunkBy(component.components, testIfComponentsOverflow(component))
-    .filter((row) => row.length > 0)
-    .reduce((height: number, row: Component[]) => {
-      const tallestComponent = maxBy(row, (col) => getLayoutHeight(col))!
-      const maxComponentHeight = getHeight(tallestComponent)
-      const verticalSpace = Math.max(verticalMargin, getMarginTop(tallestComponent)) + height
-      verticalMargin = getMarginBottom(tallestComponent)
-      const rowLast = last(row)!
-      const innerWidth = row.reduce(evaluateRowWidth(component), 0) + Math.max(getMarginRight(rowLast), getPaddingRight(component))
-      row.reduce(evaluateRowWidth(component, (child, horizontalSpace) => {
-        let x = getLayoutX(component) + horizontalSpace
-        switch (getJustifyContent(component)) {
-          case 'spaceBetween':
-            if (row.length > 1 && !getBreakAfter(rowLast)) {
-              horizontalSpace += (getWidth(component) - innerWidth) / (row.length - 1.0)
-            }
-            break
-          case 'center':
-            x += (getWidth(component) - innerWidth) / 2.0
-            break
-          case 'right':
-            x += (getWidth(component) - innerWidth)
-            break
-        }
-        let y = getLayoutY(component) + verticalSpace
-        switch (getAlignItems(component)) {
-          case 'center':
-            y += (maxComponentHeight - getHeight(child)) / 2.0
-            break
-          case 'bottom':
-            y += (maxComponentHeight - getHeight(child))
-            break
-        }
-        if (getPosition(child) === 'absolute') {
-          moveLayoutChild(child, getLayoutX(component), getLayoutY(component), component)
-        } else {
-          moveLayoutChild(child, x, y, component)
-        }
-        return horizontalSpace
-      }), 0)
-      return verticalSpace + maxComponentHeight
-    }, 0)
+  applyArrangePatches(component, arrangeFlowSequence(component, component.components))
 }
 
 function resizeComponentsForVerticalBox(component: Layoutable, _parent: Component | SizeMeasurable) {
@@ -263,44 +196,7 @@ function moveComponentsForVerticalBox(
   _oy: number = 0,
   _parent: Component | SizeMeasurable,
 ) {
-  let verticalMargin = getPaddingTop(component)
-  component.components.reduce((height: number, child: Component) => {
-    const horizontalSpace = Math.max(getPaddingLeft(component), getMarginLeft(child))
-    let verticalSpace = Math.max(verticalMargin, getMarginTop(child)) + height
-    let x = getLayoutX(component) + horizontalSpace
-    switch (getJustifyContent(component)) {
-      case 'center':
-        x += (getInnerWidth(child, component) - getWidth(child)) / 2
-        break
-      case 'right':
-        x += (getInnerWidth(child, component) - getWidth(child))
-        break
-    }
-    let y = getLayoutY(component) + verticalSpace
-    switch (getAlignItems(component)) {
-      case 'spaceBetween':
-        if (component.rawHeight && component.components.length > 1) {
-          verticalSpace += (component.rawHeight - getContentHeight(component)) / (component.components.length - 1)
-        }
-        break
-      case 'center':
-        y += (component.rawHeight ? (component.rawHeight - getContentHeight(component)) / 2 : 0)
-        break
-      case 'bottom':
-        y += (component.rawHeight ? component.rawHeight - getContentHeight(component) : 0)
-        break
-    }
-    if (getPosition(child) === 'absolute') {
-      moveLayoutChild(child, getLayoutX(component), getLayoutY(component), component)
-    } else {
-      moveLayoutChild(child, x, y, component)
-    }
-    if (getPosition(child) === 'absolute') {
-      return height
-    }
-    verticalMargin = getMarginBottom(child)
-    return verticalSpace + getHeight(child)
-  }, 0)
+  applyArrangePatches(component, arrangeVerticalBoxSequence(component, component.components))
 }
 
 function resizeComponentsForHorizontalBox(component: Layoutable, _parent: Component | SizeMeasurable) {
@@ -328,42 +224,5 @@ function moveComponentsForHorizontalBox(
   _oy: number = 0,
   _parent: Component | SizeMeasurable,
 ) {
-  let horizontalMargin = getPaddingLeft(component)
-  component.components.reduce((width: number, child: Component) => {
-    let horizontalSpace = Math.max(horizontalMargin, getMarginLeft(child)) + width
-    const verticalSpace = Math.max(getPaddingTop(component), getMarginTop(component))
-    let x = getLayoutX(component) + horizontalSpace
-    switch (getJustifyContent(component)) {
-      case 'spaceBetween':
-        if (component.rawWidth && component.components.length > 1) {
-          horizontalSpace += (component.rawWidth - getContentWidth(component)) / (component.components.length - 1)
-        }
-        break
-      case 'center':
-        x += (component.rawWidth ? (component.rawWidth - getContentWidth(component)) / 2 : 0)
-        break
-      case 'right':
-        x += (component.rawWidth ? component.rawWidth - getContentWidth(component) : 0)
-        break
-    }
-    let y = getLayoutY(component) + verticalSpace
-    switch (getAlignItems(component)) {
-      case 'center':
-        y += (getInnerHeight(child, component) - getHeight(child)) / 2
-        break
-      case 'bottom':
-        y += getInnerHeight(child, component) - getHeight(child)
-        break
-    }
-    if (getPosition(component) === 'absolute') {
-      moveLayoutChild(child, getLayoutX(component), getLayoutY(component), component)
-    } else {
-      moveLayoutChild(child, x, y, component)
-    }
-    if (getPosition(component) === 'absolute') {
-      return width
-    }
-    horizontalMargin = getMarginRight(child)
-    return horizontalSpace + getWidth(child)
-  }, 0)
+  applyArrangePatches(component, arrangeHorizontalBoxSequence(component, component.components))
 }

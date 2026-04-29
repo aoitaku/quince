@@ -15,3 +15,11 @@ export { addComponent, createContainer, findComponent } from './container'
 export type { Container } from './container'
 export { moveContainer, relayoutContainer, resizeContainer } from './layouter'
 export type { Layoutable } from './layouter'
+export {
+  arrangeFlowSequence,
+  arrangeHorizontalBoxSequence,
+  arrangeVerticalBoxSequence,
+} from './sequence'
+export type {
+  ArrangePatch,
+} from './sequence'
